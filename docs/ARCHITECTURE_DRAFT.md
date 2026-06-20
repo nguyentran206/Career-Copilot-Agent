@@ -11,11 +11,15 @@
 1. User uploads CV PDF and enters Job Description.
 2. Frontend sends file and JD text to FastAPI backend.
 3. Backend extracts text from CV PDF.
-4. LangGraph agent parses CV and JD.
-5. Embedding model calculates similarity between CV skills and JD skills.
-6. Agent generates suggestions and roadmap.
-7. Backend saves result to Supabase.
-8. Frontend displays analysis result.
+4. LangGraph agent parses the CV and JD into structured data.
+5. Agent evaluates job fit score and identifies missing or weak skills.
+6. Agent decides the best response strategy based on fit score, skill gaps, and CV quality.
+7. Agent conditionally routes the workflow:
+   - High fit: generate cover letter only.
+   - Medium fit: suggest CV improvements and generate cover letter.
+   - Low fit: suggest improvements and generate a learning roadmap.
+8. Backend saves the analysis result to Supabase.
+9. Frontend displays the personalized result.
 
 ## Agent Nodes
 - parse_cv_node
