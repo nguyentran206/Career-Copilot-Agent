@@ -33,7 +33,6 @@
 - Updated backend architecture direction from single FastAPI app to microservices
 - Decided to implement `api-gateway` before other backend services
 
-
 ## 2026-07-02
 
 ### Added

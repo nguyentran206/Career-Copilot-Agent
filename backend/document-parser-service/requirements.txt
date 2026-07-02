@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic-settings
+PyMuPDF
+pytest
+httpx
