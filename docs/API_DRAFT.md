@@ -77,10 +77,22 @@ Get the analysis status and result by session ID.
     "missing_skills": ["AWS", "Docker"],
     "cv_improvement_suggestions": [],
     "cover_letter": "Generated cover letter content...",
-    "learning_roadmap": []
+    "learning_roadmap": null
   }
 }
 ```
+
+### Conditional Result Fields
+
+`cover_letter` and `learning_roadmap` are conditional fields.
+
+| Fit Level | cover_letter | learning_roadmap |
+|---|---|---|
+| high | string | null |
+| medium | string | null |
+| low | null | array |
+
+Non-applicable fields should be returned as `null`.
 
 ### Response: Failed
 
@@ -162,3 +174,4 @@ If the PDF appears to be scanned or contains too little extractable text, the se
 * API Gateway currently exposes public API endpoints.
 * Document Parser Service and Agent Service are internal backend services.
 * Session/job persistence design may be simplified during early MVP implementation.
+* The initial MVP may use basic in-memory or database-backed session tracking before introducing a production-grade job queue.

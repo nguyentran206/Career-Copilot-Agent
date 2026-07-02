@@ -132,7 +132,7 @@ http://127.0.0.1:8002
     * High fit: generate cover letter.
     * Medium fit: suggest CV improvements and generate cover letter.
     * Low fit: suggest CV improvements and generate learning roadmap.
-13. Backend saves the analysis result to Supabase.
+13. Backend optionally saves the analysis result to Supabase, depending on the MVP implementation phase.
 14. Frontend displays the personalized result.
 
 ---
@@ -165,6 +165,10 @@ Included in MVP:
 * Embedding-based skill matching
 * Fit score calculation
 * Conditional workflow based on fit level
+* CV improvement suggestions
+* Cover letter generation for high and medium fit
+* Learning roadmap generation for low fit
+* Basic session status tracking
 * Basic frontend upload form
 * Basic result display
 

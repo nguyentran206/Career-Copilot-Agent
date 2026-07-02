@@ -65,6 +65,7 @@ The system should support conditional outcomes:
 * Cover letter generation for high and medium fit
 * Learning roadmap generation for low fit
 * Basic FastAPI endpoint
+* Basic session status tracking
 * Basic frontend upload form
 * Basic result display
 
@@ -111,7 +112,7 @@ The system should support conditional outcomes:
 * Fit score calculation
 * Supabase integration
 * Result persistence
-* Session status tracking
+* Basic session status tracking
 * End-to-end `/analyze` flow
 
 ---
