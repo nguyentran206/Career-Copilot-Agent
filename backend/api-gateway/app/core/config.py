@@ -8,7 +8,17 @@ class Settings(BaseSettings):
 
     api_prefix: str = "/api/v1"
 
+    host: str = "127.0.0.1"
+    port: int = 8000
+
     frontend_url: str = "http://localhost:3000"
+
+    document_parser_service_url: str = "http://127.0.0.1:8001"
+    agent_service_url: str = "http://127.0.0.1:8002"
+
+    request_timeout_seconds: int = 60
+
+    log_level: str = "INFO"
 
     model_config = SettingsConfigDict(
         env_file=".env",

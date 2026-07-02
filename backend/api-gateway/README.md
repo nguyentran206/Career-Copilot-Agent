@@ -16,6 +16,21 @@ API Gateway for the Career Copilot Agent microservice architecture.
 | ------ | ---------------- | ----------------------------------- |
 | GET    | `/api/v1/health` | Check if the API Gateway is running |
 
+## Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| APP_NAME | Service name | Career Copilot API Gateway |
+| APP_ENV | Environment | development |
+| APP_VERSION | App version | 0.1.0 |
+| API_PREFIX | API prefix | /api/v1 |
+| HOST | Server host | 127.0.0.1 |
+| PORT | Server port | 8000 |
+| FRONTEND_URL | Frontend origin for CORS | http://localhost:3000 |
+| DOCUMENT_PARSER_SERVICE_URL | Internal Document Parser URL | http://127.0.0.1:8001 |
+| AGENT_SERVICE_URL | Internal Agent Service URL | http://127.0.0.1:8002 |
+| REQUEST_TIMEOUT_SECONDS | Internal request timeout | 60 |
+
 ## Local Development
 
 ### 1. Navigate to API Gateway
