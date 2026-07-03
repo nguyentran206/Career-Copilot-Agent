@@ -2,6 +2,8 @@
 
 API Gateway for the Career Copilot Agent microservice architecture.
 
+This README explains how to run and configure API Gateway locally.
+
 ## Responsibilities
 
 * Receive requests from the frontend

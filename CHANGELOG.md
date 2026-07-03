@@ -1,5 +1,9 @@
 # Changelog
 
+This document records notable changes to the Career Copilot Agent project by date.
+
+For current implementation progress, see [Implementation Status](docs/IMPLEMENTATION_STATUS.md).
+
 ## 2026-06-18
 
 ### Added
