@@ -103,3 +103,9 @@ http://127.0.0.1:8000/docs
 
 The API Gateway currently provides only the health check endpoint.
 Routing to internal services will be added in future phases.
+
+## Related Documentation
+
+* [Architecture Draft](../../docs/ARCHITECTURE_DRAFT.md)
+* [API Draft](../../docs/API_DRAFT.md)
+* [Implementation Status](../../docs/IMPLEMENTATION_STATUS.md)
