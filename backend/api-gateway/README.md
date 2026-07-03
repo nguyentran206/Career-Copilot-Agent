@@ -10,13 +10,14 @@ This README explains how to run and configure API Gateway locally.
 * Expose public API endpoints
 * Handle CORS configuration
 * Provide gateway health check
-* Route requests to internal services in future phases
+* Route requests to internal services
 
 ## Current Endpoints
 
 | Method | Endpoint         | Description                         |
 | ------ | ---------------- | ----------------------------------- |
 | GET    | `/api/v1/health` | Check if the API Gateway is running |
+| POST | `/api/v1/analyze` | Parse uploaded CV through Document Parser Service and return temporary analysis response |
 
 ## Environment Variables
 
@@ -103,8 +104,13 @@ http://127.0.0.1:8000/docs
 
 ## Current Status
 
-The API Gateway currently provides only the health check endpoint.
-Routing to internal services will be added in future phases.
+The API Gateway currently provides:
+
+* Health check endpoint
+* Temporary analyze endpoint that calls Document Parser Service
+
+Full Agent analysis and session-based processing are not implemented yet.
+Routing to Agent Service will be added in a future phase.
 
 ## Related Documentation
 

@@ -75,8 +75,12 @@ For current implementation progress, see [Implementation Status](docs/IMPLEMENTA
 * Added PDF parsing error handling for invalid or unsupported PDF inputs.
 * Added basic tests for `document-parser-service`.
 * Added test coverage for health check and document parsing validation cases.
-* Added `pytest.ini` for stable test discovery and import path configuration.
 * Added Document Parser error response documentation.
+* Added temporary `POST /api/v1/analyze` endpoint in API Gateway.
+* Added API Gateway integration with Document Parser Service.
+* Added parser-based analyze response with CV metadata, JD text length, and text preview.
+* Added manual Swagger testing for API Gateway analyze flow.
+* Added automated tests for API Gateway analyze endpoint.
 
 ### Changed
 

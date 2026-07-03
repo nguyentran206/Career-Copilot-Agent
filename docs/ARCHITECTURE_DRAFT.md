@@ -44,12 +44,20 @@ Current endpoint:
 
 ```text
 GET /api/v1/health
+POST /api/v1/analyze
+```
+
+Current POST /api/v1/analyze behavior:
+
+```text
+API Gateway receives CV PDF and JD text
+→ calls Document Parser Service
+→ returns temporary parser-based response
 ```
 
 Future endpoints:
 
 ```text
-POST /api/v1/analyze
 GET /api/v1/session/{session_id}
 ```
 
@@ -123,9 +131,22 @@ http://127.0.0.1:8002
 9. Agent performs skill matching using embedding-based similarity.
 10. Agent calculates a fit score from 0 to 100.
 11. Agent identifies matched skills, missing skills, and weak areas.
-12. Agent decides the response strategy based on fit score according to [MVP Scope](MVP_SCOPE.md)
-14. Future phase: save the analysis result to Supabase.
-15. Frontend displays the personalized result.
+12. Agent decides the response strategy based on fit score according to [MVP Scope](MVP_SCOPE.md).
+13. Future phase: save the analysis result to Supabase.
+14. Frontend displays the personalized result.
+
+---
+
+## Current Implemented Flow
+
+```text
+User uploads CV PDF and enters JD text through API Gateway Swagger
+→ API Gateway calls Document Parser Service
+→ Document Parser Service extracts CV text
+→ API Gateway returns parser metadata, JD text length, and text preview
+```
+
+Full Agent analysis is not implemented yet.
 
 ---
 
