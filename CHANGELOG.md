@@ -67,6 +67,12 @@
 ### Added
 
 * Added `IMPLEMENTATION_STATUS.md` to track current MVP implementation progress separately from MVP scope and changelog.
+* Added upload validation for `document-parser-service`, including file type, content type, empty file, and file size checks.
+* Added PDF parsing error handling for invalid or unsupported PDF inputs.
+* Added basic tests for `document-parser-service`.
+* Added test coverage for health check and document parsing validation cases.
+* Added `pytest.ini` for stable test discovery and import path configuration.
+* Added Document Parser error response documentation.
 
 ### Changed
 
@@ -77,8 +83,13 @@
 * Updated `API_DRAFT.md` to clarify API response rules for conditional result fields.
 * Clarified that Supabase result persistence is planned for a future phase, not the initial MVP.
 * Clarified that API Gateway is responsible for coordinating calls between frontend and internal services.
+* Updated `document-parser-service` response schema to use `Field(default_factory=list)` for warnings.
+* Standardized parser output to include filename, document type, content type, file size, page count, extracted text, text length, and warnings.
 
 ### Fixed
 
 * Moved implementation progress tracking out of `MVP_SCOPE.md` to avoid mixing scope definition with current development status.
 * Separated initial LangGraph workflow nodes from future workflow nodes.
+* Fixed test import issues by configuring pytest path discovery.
+* Fixed mutable default list usage in parser response warnings.
+
