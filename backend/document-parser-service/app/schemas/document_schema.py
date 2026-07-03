@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ParseDocumentResponse(BaseModel):
@@ -9,4 +9,4 @@ class ParseDocumentResponse(BaseModel):
     page_count: int
     text: str
     text_length: int
-    warnings: list[str] = []
+    warnings: list[str] = Field(default_factory=list)

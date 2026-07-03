@@ -1,13 +1,13 @@
 # Document Parser Service
 
-Microservice responsible for extracting raw text from uploaded CV/JD PDF files.
+Microservice responsible for extracting raw text from uploaded PDF documents.
 
 ## Responsibilities
 
 * Receive uploaded PDF documents
 * Validate uploaded file type and size
 * Extract raw text from PDF files
-* Return extracted text and document metadata to API Gateway or Agent Service
+* Return extracted text and document metadata to API Gateway
 
 ## Current Endpoints
 
@@ -76,6 +76,19 @@ If the PDF appears to be scanned or contains too little extractable text, the se
 ```
 
 OCR is not included in the MVP. The service only detects low-text or scanned PDFs and returns a warning.
+
+### Error Responses
+
+| Status Code | Error Code | Description |
+|---|---|---|
+| 400 | FILE_REQUIRED | File is required. |
+| 400 | INVALID_FILENAME | Filename is required. |
+| 400 | UNSUPPORTED_FILE_TYPE | Uploaded file is not a supported PDF file. |
+| 400 | INVALID_CONTENT_TYPE | Uploaded file content type is not supported. |
+| 400 | EMPTY_FILE | Uploaded file is empty. |
+| 400 | INVALID_PDF | Uploaded file is not a valid PDF. |
+| 400 | ENCRYPTED_PDF | Password-protected PDFs are not supported. |
+| 413 | FILE_TOO_LARGE | Uploaded file exceeds the maximum allowed size. |
 
 ## Environment Variables
 
@@ -167,4 +180,4 @@ http://127.0.0.1:8001/docs
 * OCR is not implemented yet.
 * Scanned PDFs may return empty or very short text with a warning.
 * The service only extracts raw text and metadata.
-* Structured CV/JD parsing, AI analysis, fit scoring, cover letter generation, and roadmap generation are handled by other services in future phases.
+* Structured CV/JD parsing, AI analysis, fit scoring, cover letter generation, and roadmap generation are outside this service and will be handled by the Agent Service.
