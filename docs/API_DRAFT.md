@@ -35,7 +35,31 @@ Content type: `multipart/form-data`
 | cv_file | PDF file | Yes      | Candidate CV in PDF format |
 | jd_text | string   | Yes      | Job Description text       |
 
-### Response
+Current implementation returns a temporary parser-based response. Full fit scoring and Agent analysis will be added in a later phase.
+
+### Current Temporary Response
+
+Current implementation returns a parser-based response. Full Agent analysis and session-based processing will be added in a later phase.
+
+```json
+{
+  "status": "completed",
+  "message": "CV parsed successfully. Agent analysis is not implemented yet.",
+  "cv_parse_result": {
+    "filename": "cv.pdf",
+    "document_type": "cv",
+    "content_type": "application/pdf",
+    "file_size_bytes": 245321,
+    "page_count": 2,
+    "text_length": 5421,
+    "warnings": []
+  },
+  "jd_text_length": 1200,
+  "text_preview": "First 300 characters of extracted CV text..."
+}
+```
+
+### Future Session-Based Response
 
 ```json
 {
@@ -43,8 +67,6 @@ Content type: `multipart/form-data`
   "status": "processing"
 }
 ```
-
----
 
 ### GET /api/v1/session/{session_id}
 

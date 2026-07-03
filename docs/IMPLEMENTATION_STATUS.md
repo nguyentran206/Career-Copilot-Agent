@@ -23,12 +23,17 @@ MVP is in development.
 * Document Parser Service PDF parsing endpoint
 * Document Parser Service API contract documentation
 * Document Parser Service environment variable documentation
+* API Gateway temporary analyze endpoint
+* API Gateway routing to Document Parser Service
+* Manual Swagger testing for `POST /api/v1/analyze`
+* Automated tests for API Gateway analyze endpoint
+* Initial vertical slice: API Gateway receives CV PDF and JD text, calls Document Parser Service, and returns parser-based response
 
 ## Not Implemented Yet
 
 * Frontend Next.js application
-* API Gateway routing to Document Parser Service
 * Agent Service
+* API Gateway integration with Agent Service
 * LangGraph workflow
 * Gemini integration
 * Embedding-based skill matching
@@ -36,4 +41,4 @@ MVP is in development.
 * Supabase integration
 * Result persistence
 * Basic session status tracking
-* End-to-end `/analyze` flow
+* Full Agent-based `/analyze` flow
