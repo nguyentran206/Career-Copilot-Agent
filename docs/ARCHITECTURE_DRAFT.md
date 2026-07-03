@@ -4,11 +4,7 @@
 
 Career Copilot Agent is an AI-powered system that analyzes a candidate's CV against a Job Description and returns a personalized action plan.
 
-The system does not only return a fit score. It also decides what the candidate should do next based on the match level:
-
-* High fit: generate a cover letter.
-* Medium fit: suggest CV improvements and generate a cover letter.
-* Low fit: suggest CV improvements and generate a learning roadmap.
+The system does not only return a fit score. The Agent Service follows the MVP decision rules defined in [MVP Scope](MVP_SCOPE.md) to choose the appropriate next-step recommendation.
 
 ---
 
@@ -66,7 +62,7 @@ Responsibilities:
 * Receive uploaded PDF documents
 * Validate uploaded file type and size
 * Extract raw text from PDF files
-* Return extracted text and document metadata to API Gateway or Agent Service
+* Return extracted text and document metadata to API Gateway.
 
 Current service port:
 
@@ -104,7 +100,7 @@ Responsibilities:
 * Generate cover letter for high and medium fit
 * Generate learning roadmap for low fit
 * Return final analysis result
-* Save result to Supabase in a future phase
+* Future: save analysis result to Supabase
 
 Planned service port:
 
@@ -127,19 +123,15 @@ http://127.0.0.1:8002
 9. Agent performs skill matching using embedding-based similarity.
 10. Agent calculates a fit score from 0 to 100.
 11. Agent identifies matched skills, missing skills, and weak areas.
-12. Agent decides the response strategy based on fit score, skill gaps, and CV quality:
-
-    * High fit: generate cover letter.
-    * Medium fit: suggest CV improvements and generate cover letter.
-    * Low fit: suggest CV improvements and generate learning roadmap.
-13. Backend optionally saves the analysis result to Supabase, depending on the MVP implementation phase.
-14. Frontend displays the personalized result.
+12. Agent decides the response strategy based on fit score according to [MVP Scope](MVP_SCOPE.md)
+14. Future phase: save the analysis result to Supabase.
+15. Frontend displays the personalized result.
 
 ---
 
 ## Agent Nodes
 
-Planned LangGraph nodes:
+### MVP Nodes
 
 * parse_cv_node
 * parse_jd_node
@@ -149,37 +141,7 @@ Planned LangGraph nodes:
 * suggest_improvements_node
 * generate_cover_letter_node
 * generate_roadmap_node
+
+### Future Nodes
+
 * save_result_node
-
----
-
-## MVP Architecture Scope
-
-Included in MVP:
-
-* API Gateway foundation
-* Document Parser Service foundation
-* CV PDF text extraction
-* JD text input
-* LangGraph Agent pipeline
-* Embedding-based skill matching
-* Fit score calculation
-* Conditional workflow based on fit level
-* CV improvement suggestions
-* Cover letter generation for high and medium fit
-* Learning roadmap generation for low fit
-* Basic session status tracking
-* Basic frontend upload form
-* Basic result display
-
-Not included in MVP:
-
-* Authentication
-* Payment
-* User dashboard
-* Multi-user history
-* Beautiful PDF report
-* OCR for scanned PDFs
-* JD PDF upload
-* Advanced job queue system
-* Advanced analytics

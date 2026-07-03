@@ -7,7 +7,11 @@ This document defines the initial API contract for the Career Copilot Agent MVP.
 The system follows a microservice-based backend architecture:
 
 ```text
-Frontend → API Gateway → Document Parser Service → Agent Service → Gemini/Supabase
+Frontend → API Gateway
+API Gateway → Document Parser Service
+API Gateway → Agent Service
+Agent Service → Gemini
+Future: Agent Service/API Gateway → Supabase
 ```
 
 The API Gateway exposes public endpoints to the frontend. Internal services such as Document Parser Service and Agent Service are called by the API Gateway or backend workflow.
@@ -84,15 +88,19 @@ Get the analysis status and result by session ID.
 
 ### Conditional Result Fields
 
-`cover_letter` and `learning_roadmap` are conditional fields.
+`cv_improvement_suggestions`, `cover_letter`, and `learning_roadmap` depend on the fit level.
 
-| Fit Level | cover_letter | learning_roadmap |
-|---|---|---|
-| high | string | null |
-| medium | string | null |
-| low | null | array |
+| Fit Level | cv_improvement_suggestions | cover_letter | learning_roadmap |
+|---|---|---|---|
+| high | [] | string | null |
+| medium | array | string | null |
+| low | array | null | array |
 
-Non-applicable fields should be returned as `null`.
+Rules:
+
+* `cv_improvement_suggestions` should always be an array.
+* If there are no CV improvement suggestions, return an empty array `[]`.
+* Non-applicable object/string fields should be returned as `null`.
 
 ### Response: Failed
 
@@ -162,16 +170,4 @@ If the PDF appears to be scanned or contains too little extractable text, the se
 }
 ```
 
----
 
-## MVP Notes
-
-* Current MVP input is CV PDF and JD text.
-* JD PDF upload is not included in the MVP.
-* Document Parser Service is designed generically and may support JD PDF parsing in a future phase.
-* OCR is not included in the MVP.
-* Scanned PDFs may return empty or short text with a warning.
-* API Gateway currently exposes public API endpoints.
-* Document Parser Service and Agent Service are internal backend services.
-* Session/job persistence design may be simplified during early MVP implementation.
-* The initial MVP may use basic in-memory or database-backed session tracking before introducing a production-grade job queue.

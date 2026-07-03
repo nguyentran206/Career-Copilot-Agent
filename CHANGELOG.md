@@ -61,3 +61,24 @@
 * Removed unnecessary MVP reference to authentication service configuration
 * Renamed parser service configuration from `DOCS_PARSER_SERVICE_URL` to `DOCUMENT_PARSER_SERVICE_URL`
 * Clarified API Gateway and Document Parser service ports
+
+## 2026-07-03
+
+### Added
+
+* Added `IMPLEMENTATION_STATUS.md` to track current MVP implementation progress separately from MVP scope and changelog.
+
+### Changed
+
+* Refined project documentation structure to improve Single Source of Truth.
+* Updated `README.md` to focus on project overview, documentation links, tech stack, backend services summary, and local development.
+* Updated `MVP_SCOPE.md` to focus on MVP goal, input/output, scope, out-of-scope items, decision rules, and success criteria.
+* Updated `ARCHITECTURE_DRAFT.md` to focus on backend services, technical flow, and LangGraph workflow nodes.
+* Updated `API_DRAFT.md` to clarify API response rules for conditional result fields.
+* Clarified that Supabase result persistence is planned for a future phase, not the initial MVP.
+* Clarified that API Gateway is responsible for coordinating calls between frontend and internal services.
+
+### Fixed
+
+* Moved implementation progress tracking out of `MVP_SCOPE.md` to avoid mixing scope definition with current development status.
+* Separated initial LangGraph workflow nodes from future workflow nodes.

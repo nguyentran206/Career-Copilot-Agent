@@ -49,86 +49,84 @@ The system should support conditional outcomes:
 
 ---
 
-## In MVP
+## MVP Decision Rules
 
-* API Gateway foundation
-* Document Parser Service foundation
-* PDF text extraction for CV
-* JD text input
-* CV parsing
-* JD parsing
-* LangGraph agent pipeline
-* Embedding-based skill matching
-* Fit score calculation
-* Conditional workflow based on fit level
-* CV improvement suggestions
-* Cover letter generation for high and medium fit
-* Learning roadmap generation for low fit
-* Basic FastAPI endpoint
-* Basic session status tracking
-* Basic frontend upload form
-* Basic result display
+The system returns different recommendations based on the candidate's fit level:
+
+| Fit Level | MVP Output |
+|---|---|
+| high | Fit score, matched/missing skills, and cover letter |
+| medium | Fit score, matched/missing skills, CV improvement suggestions, and cover letter |
+| low | Fit score, matched/missing skills, CV improvement suggestions, and learning roadmap |
 
 ---
 
-## Not in MVP
+## In Scope (MVP Features)
 
-* Authentication
-* User dashboard
-* Payment
-* Advanced analytics
-* Beautiful PDF report
-* Multi-user history
-* JD PDF upload
-* OCR for scanned PDFs
-* Advanced job queue system
-* Advanced session management
-* Production-grade deployment
-* CI/CD pipeline
-
----
-
-## Current Implementation Status
-
-### Completed Foundation
-
-* API Gateway initial FastAPI structure
-* API Gateway health check endpoint
-* API Gateway environment variable documentation
-* Document Parser Service initial FastAPI structure
-* Document Parser Service health check endpoint
-* Document Parser Service PDF parsing endpoint
-* Document Parser Service API contract documentation
-* Document Parser Service environment variable documentation
-
-### Not Implemented Yet
-
-* Frontend Next.js application
-* API Gateway routing to Document Parser Service
-* Agent Service
-* LangGraph workflow
-* Gemini integration
-* Embedding-based skill matching
-* Fit score calculation
-* Supabase integration
-* Result persistence
-* Basic session status tracking
-* End-to-end `/analyze` flow
+* **Frontend:** Basic frontend upload form and basic result display.
+* **API Gateway:** Foundation exposing public API endpoints.
+* **Document Parser Service:** Internal service foundation for PDF text extraction.
+* **Agent Service:** Internal backend service running the LangGraph agent pipeline.
+* **Core Logic:**
+  * CV PDF text extraction
+  * JD text input
+  * CV & JD parsing
+  * Embedding-based skill matching
+  * Fit score calculation
+  * Conditional workflow based on fit level
+  * CV improvement suggestions
+  * Cover letter generation (for high and medium fit)
+  * Learning roadmap generation (for low fit)
+* **Session Tracking:** Basic in-memory session status tracking for MVP.
 
 ---
 
-## MVP Success Criteria
+## Out of Scope (Not in MVP)
 
-The MVP is considered successful when the following vertical slice works:
+* **User Management & Monetization:**
+  * Authentication
+  * Payment
+  * User dashboard
+  * Multi-user history
+* **Advanced Document Handling:**
+  * JD PDF upload (MVP only supports JD text)
+  * OCR for scanned PDFs
+  * Beautiful PDF report generation
+* **System & Infrastructure:**
+  * Advanced analytics
+  * Advanced job queue system (Session/job persistence design is simplified for MVP)
+  * Advanced session management
+  * Production-grade deployment
+  * CI/CD pipeline
+
+---
+
+## Technical & Implementation Notes
+
+* Document Parser Service is designed generically and may support JD PDF parsing in a future phase.
+* Since OCR is not included, scanned PDFs may return empty or short text along with a `NO_TEXT_EXTRACTED_OR_SCANNED_PDF` warning.
+* API Gateway acts as the public entry point, while Document Parser and Agent Service operate strictly as internal backend services.
+* The initial MVP uses in-memory session status tracking.
+* Long-term result persistence with Supabase is not part of the initial MVP and will be added in a future phase.
+
+---
+
+## User Flow & Success Criteria
+
+The MVP is considered successful when the following vertical slice (End-to-End Flow) works without requiring authentication, payment, or advanced history:
 
 ```text
 User uploads CV PDF and enters JD text
 → Frontend sends request to API Gateway
 → API Gateway sends CV PDF to Document Parser Service
-→ Document Parser Service returns CV text
+→ Document Parser Service returns extracted CV text
 → Agent Service analyzes CV text against JD text
 → System returns fit score, matched skills, missing skills, suggestions, and conditional output
 → Frontend displays the result
 ```
 
-The first complete MVP does not need authentication, payment, dashboard, OCR, or advanced history.
+## Implementation Status
+
+MVP is currently in development.
+
+For current implementation progress, see [Implementation Status](IMPLEMENTATION_STATUS.md).

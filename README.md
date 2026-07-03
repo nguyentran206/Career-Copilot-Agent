@@ -6,23 +6,16 @@ The system extracts text from a CV PDF, analyzes it against a Job Description, c
 
 ## Product Goal
 
-Career Copilot Agent helps candidates answer three questions:
+Career Copilot Agent helps candidates understand how well their CV matches a Job Description and what they should do next to improve their chance.
 
-1. How well does my CV match this job?
-2. What skills or requirements am I missing?
-3. What should I do next to improve my chance?
-
-The system provides different outputs based on the candidate's fit level:
-
-* High fit: generate a cover letter.
-* Medium fit: suggest CV improvements and generate a cover letter.
-* Low fit: suggest CV improvements and generate a learning roadmap.
+For detailed MVP scope, input/output, and conditional outcomes, see [MVP Scope](docs/MVP_SCOPE.md).
 
 ## Documentation
 
 * [MVP Scope](docs/MVP_SCOPE.md)
 * [Architecture Draft](docs/ARCHITECTURE_DRAFT.md)
 * [API Draft](docs/API_DRAFT.md)
+* [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
 * [Changelog](CHANGELOG.md)
 
 ## Tech Stack
@@ -37,117 +30,14 @@ The system provides different outputs based on the candidate's fit level:
 
 ## Backend Services
 
-### API Gateway
+The backend is organized as FastAPI microservices:
 
-Public entry point for frontend requests.
+* `backend/api-gateway`: public entry point for frontend requests.
+* `backend/document-parser-service`: internal service for extracting text from uploaded PDF documents.
+* `backend/agent-service`: planned internal service for running the LangGraph CV/JD analysis workflow.
 
-Responsibilities:
-
-* Receive requests from the frontend
-* Expose public API endpoints
-* Handle CORS configuration
-* Provide gateway health check
-* Route requests to internal services in future phases
-
-Service path:
-
-```txt
-backend/api-gateway
-```
-
-Current endpoint:
-
-```txt
-GET /api/v1/health
-```
-
-Local URL:
-
-```txt
-http://127.0.0.1:8000
-```
-
-### Document Parser Service
-
-Internal service responsible for extracting raw text from uploaded PDF documents.
-
-Responsibilities:
-
-* Receive uploaded PDF documents
-* Validate uploaded file type and size
-* Extract raw text from PDF files
-* Return extracted text and document metadata
-
-Service path:
-
-```txt
-backend/document-parser-service
-```
-
-Current endpoints:
-
-```txt
-GET /api/v1/health
-POST /api/v1/parse-document
-```
-
-Local URL:
-
-```txt
-http://127.0.0.1:8001
-```
-
-### Agent Service
-
-Planned internal service responsible for running the LangGraph CV/JD analysis workflow.
-
-Responsibilities:
-
-* Parse CV text into structured information
-* Parse JD text into structured requirements
-* Match skills using embedding-based similarity
-* Calculate fit score
-* Generate CV improvement suggestions
-* Generate cover letter for high and medium fit
-* Generate learning roadmap for low fit
-
-Planned local URL:
-
-```txt
-http://127.0.0.1:8002
-```
-
-## Current Status
-
-MVP is in development.
-
-Completed foundation:
-
-* Project planning documents
-* MVP scope
-* Architecture draft
-* API draft
-* API Gateway FastAPI structure
-* API Gateway health check endpoint
-* API Gateway environment configuration
-* Document Parser Service FastAPI structure
-* Document Parser health check endpoint
-* Document Parser PDF text extraction endpoint
-* Document Parser API contract documentation
-
-Not implemented yet:
-
-* Frontend Next.js application
-* API Gateway routing to Document Parser Service
-* Agent Service
-* LangGraph workflow
-* Gemini integration
-* Embedding-based skill matching
-* Fit score calculation
-* Supabase integration
-* Result persistence
-* Basic session status tracking
-* End-to-end `/analyze` flow
+For detailed service responsibilities, see [Architecture Draft](docs/ARCHITECTURE_DRAFT.md).  
+For endpoint contracts, see [API Draft](docs/API_DRAFT.md).
 
 ## Local Development
 
@@ -224,27 +114,3 @@ Open:
 ```txt
 http://127.0.0.1:8001/docs
 ```
-
-## MVP Flow
-
-Planned end-to-end flow:
-
-```txt
-User uploads CV PDF and enters JD text
-→ Frontend sends request to API Gateway
-→ API Gateway sends CV PDF to Document Parser Service
-→ Document Parser Service returns extracted CV text
-→ Agent Service analyzes CV text against JD text
-→ System returns fit score, matched skills, missing skills, suggestions, and conditional output
-→ Frontend displays the result
-```
-
-## MVP Limitations
-
-* Authentication is not included.
-* Payment is not included.
-* User dashboard is not included.
-* Multi-user history is not included.
-* OCR for scanned PDFs is not included.
-* JD PDF upload is not included in the MVP.
-* Beautiful PDF report generation is not included.
