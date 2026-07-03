@@ -125,6 +125,8 @@ User uploads CV PDF and enters JD text
 → Frontend displays the result
 ```
 
+---
+
 ## Implementation Status
 
 MVP is currently in development.
