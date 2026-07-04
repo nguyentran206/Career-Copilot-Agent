@@ -17,3 +17,13 @@ class AnalyzeResponse(BaseModel):
     cv_parse_result: CVParseSummary
     jd_text_length: int
     text_preview: str | None = None
+
+class DocumentParserResponse(BaseModel):
+    filename: str
+    document_type: str | None = None
+    content_type: str | None = None
+    file_size_bytes: int
+    page_count: int
+    text: str
+    text_length: int
+    warnings: list[str] = Field(default_factory=list)

@@ -1,11 +1,32 @@
 import httpx
 from fastapi import HTTPException, UploadFile, status
 
+from pydantic import ValidationError
+from app.modules.analyze.schemas import DocumentParserResponse
+
 from app.core.config import settings
 
 
-async def parse_cv_with_document_parser(cv_file: UploadFile) -> dict:
+async def parse_cv_with_document_parser(cv_file: UploadFile) -> DocumentParserResponse:
     file_bytes = await cv_file.read()
+
+    if len(file_bytes) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "EMPTY_CV_FILE",
+                "message": "Uploaded CV file is empty.",
+            },
+        )
+
+    if len(file_bytes) > settings.max_cv_file_size_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail={
+                "code": "CV_FILE_TOO_LARGE",
+                "message": f"CV file size exceeds {settings.max_cv_file_size_mb}MB limit.",
+            },
+        )
 
     files = {
         "file": (
@@ -34,12 +55,19 @@ async def parse_cv_with_document_parser(cv_file: UploadFile) -> dict:
         ) from exc
 
     if response.status_code >= 400:
+        try:
+            parser_detail = response.json()
+        except ValueError:
+            parser_detail = {
+                "raw_response": response.text[:500]
+            }
+
         raise HTTPException(
             status_code=response.status_code,
             detail={
                 "code": "DOCUMENT_PARSER_ERROR",
                 "message": "Document Parser Service failed to parse the uploaded CV.",
-                "parser_detail": response.json(),
+                "parser_detail": parser_detail,
             },
         )
 
