@@ -81,7 +81,6 @@ OCR is not included in the MVP. The service only detects low-text or scanned PDF
 
 | Status Code | Error Code | Description |
 |---|---|---|
-| 400 | FILE_REQUIRED | File is required. |
 | 400 | INVALID_FILENAME | Filename is required. |
 | 400 | UNSUPPORTED_FILE_TYPE | Uploaded file is not a supported PDF file. |
 | 400 | INVALID_CONTENT_TYPE | Uploaded file content type is not supported. |
@@ -89,6 +88,7 @@ OCR is not included in the MVP. The service only detects low-text or scanned PDF
 | 400 | INVALID_PDF | Uploaded file is not a valid PDF. |
 | 400 | ENCRYPTED_PDF | Password-protected PDFs are not supported. |
 | 413 | FILE_TOO_LARGE | Uploaded file exceeds the maximum allowed size. |
+| 422 | FastAPI validation error | Missing required multipart field `file`. |
 
 ## Environment Variables
 

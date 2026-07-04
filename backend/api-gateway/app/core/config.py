@@ -18,6 +18,12 @@ class Settings(BaseSettings):
 
     request_timeout_seconds: int = 60
 
+    max_cv_file_size_mb: int = 5
+
+    @property
+    def max_cv_file_size_bytes(self) -> int:
+        return self.max_cv_file_size_mb * 1024 * 1024
+
     log_level: str = "INFO"
 
     model_config = SettingsConfigDict(
