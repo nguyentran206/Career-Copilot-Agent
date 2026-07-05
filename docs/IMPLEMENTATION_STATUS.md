@@ -28,6 +28,12 @@ MVP is in development.
 * Manual Swagger testing for `POST /api/v1/analyze`
 * Automated tests for API Gateway analyze endpoint
 * Initial vertical slice: API Gateway receives CV PDF and JD text, calls Document Parser Service, and returns parser-based response
+* API Gateway JD text normalization and validation for `POST /api/v1/analyze`
+* API Gateway CV file empty and size validation before calling Document Parser Service
+* API Gateway parser response schema validation
+* Safer API Gateway handling for Document Parser error and non-JSON responses
+* Clarified temporary analyze status as parser-completed instead of full analysis completed
+* Document Parser missing file behavior documented as FastAPI request validation
 
 ## Not Implemented Yet
 

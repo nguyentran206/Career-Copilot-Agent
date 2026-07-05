@@ -101,3 +101,27 @@ For current implementation progress, see [Implementation Status](docs/IMPLEMENTA
 * Fixed test import issues by configuring pytest path discovery.
 * Fixed mutable default list usage in parser response warnings.
 
+
+## 2026-07-04
+
+### Added
+
+* Added API Gateway-side JD text normalization and validation for `POST /api/v1/analyze`.
+* Added API Gateway-side CV file empty check and file size validation before calling Document Parser Service.
+* Added `DocumentParserResponse` schema in API Gateway to validate Document Parser Service responses.
+* Added `pytest.ini` for API Gateway test path configuration.
+* Added automated tests for blank JD text, short JD text, and empty CV file validation.
+
+### Changed
+
+* Changed temporary analyze response status from `completed` to `parser_completed` to avoid confusion with full Agent analysis completion.
+* Updated API Gateway analyze flow to use normalized JD text length.
+* Updated API Gateway analyze tests to match the stricter validation rules and parser response schema.
+* Clarified Document Parser missing file behavior in README as FastAPI `422` validation error.
+
+### Fixed
+
+* Fixed unsafe direct `response.json()` handling when Document Parser Service returns an error response.
+* Fixed potential Gateway `500` errors caused by missing or unexpected fields in Document Parser responses.
+* Fixed API Gateway test import path discovery with pytest configuration.
+
