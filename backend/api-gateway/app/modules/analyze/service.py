@@ -71,4 +71,4 @@ async def parse_cv_with_document_parser(cv_file: UploadFile) -> DocumentParserRe
             },
         )
 
-    return response.json()
+    return DocumentParserResponse(**response.json())
