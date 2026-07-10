@@ -1,6 +1,24 @@
 from app.schemas.analysis import SkillMatch
 
 
+RELATED_SKILL_MATCHES = {
+    "PostgreSQL": {"SQL"},
+    "SQL": {"PostgreSQL"},
+    "REST API": {"FastAPI", "Django", "Flask"},
+    "FastAPI": {"REST API"},
+    "Django": {"REST API"},
+    "Flask": {"REST API"},
+    "Machine Learning": {"Python", "Statistics", "NumPy", "Pandas"},
+    "Data Analysis": {"SQL", "Excel", "Pandas", "Statistics", "Dashboard"},
+    "Dashboard": {"Power BI", "Tableau"},
+    "Embedding": {"RAG", "LLM"},
+    "RAG": {"LLM", "Embedding"},
+    "Generative AI": {"LLM", "RAG"},
+    "LangGraph": {"LangChain", "LLM"},
+    "LangChain": {"LangGraph", "LLM"},
+}
+
+
 def get_match_level(similarity: float) -> str:
     if similarity >= 0.80:
         return "strong"
@@ -9,16 +27,35 @@ def get_match_level(similarity: float) -> str:
     return "missing"
 
 
+def find_best_skill_match(
+    required_skill: str,
+    cv_skills: list[str],
+) -> tuple[str | None, float]:
+    cv_skill_lookup = {skill.lower(): skill for skill in cv_skills}
+
+    exact_match = cv_skill_lookup.get(required_skill.lower())
+    if exact_match:
+        return exact_match, 1.0
+
+    related_skills = RELATED_SKILL_MATCHES.get(required_skill, set())
+    for cv_skill in cv_skills:
+        if cv_skill in related_skills:
+            return cv_skill, 0.70
+
+    return None, 0.0
+
+
 def match_required_skills(
     required_skills: list[str],
     cv_skills: list[str],
 ) -> list[SkillMatch]:
-    cv_skill_lookup = {skill.lower(): skill for skill in cv_skills}
     matches: list[SkillMatch] = []
 
     for required_skill in required_skills:
-        matched_skill = cv_skill_lookup.get(required_skill.lower())
-        similarity = 1.0 if matched_skill else 0.0
+        matched_skill, similarity = find_best_skill_match(
+            required_skill=required_skill,
+            cv_skills=cv_skills,
+        )
 
         matches.append(
             SkillMatch(

@@ -55,10 +55,10 @@ def analyze_cv_against_jd(request: AgentAnalyzeRequest) -> AgentAnalyzeResponse:
         missing_required_count=len(missing_skills),
     )
 
-    suggestions = [
-        f"Add stronger evidence for {skill} in your CV."
-        for skill in missing_skills
-    ]
+    suggestions = build_improvement_suggestions(
+        fit_level=fit_level,
+        missing_skills=missing_skills,
+    )
 
     cover_letter = None
     learning_roadmap = None
@@ -67,10 +67,7 @@ def analyze_cv_against_jd(request: AgentAnalyzeRequest) -> AgentAnalyzeResponse:
         cover_letter = "Cover letter generation will be implemented in a later phase."
 
     if fit_level == "low":
-        learning_roadmap = [
-            f"Learn and practice {skill} with a small portfolio project."
-            for skill in missing_skills
-        ]
+        learning_roadmap = build_learning_roadmap(missing_skills)
 
     return AgentAnalyzeResponse(
         fit_score=fit_score,
@@ -85,3 +82,40 @@ def analyze_cv_against_jd(request: AgentAnalyzeRequest) -> AgentAnalyzeResponse:
         cover_letter=cover_letter,
         learning_roadmap=learning_roadmap,
     )
+
+
+def build_improvement_suggestions(
+    fit_level: str,
+    missing_skills: list[str],
+) -> list[str]:
+    if missing_skills:
+        return [
+            f"Add stronger evidence for {skill} in your CV."
+            for skill in missing_skills
+        ]
+
+    if fit_level == "medium":
+        return [
+            "Add more specific achievements, metrics, and project outcomes to strengthen your CV."
+        ]
+
+    if fit_level == "low":
+        return [
+            "Add more relevant skills and project evidence that directly match the Job Description."
+        ]
+
+    return []
+
+
+def build_learning_roadmap(missing_skills: list[str]) -> list[str]:
+    if missing_skills:
+        return [
+            f"Learn and practice {skill} with a small portfolio project."
+            for skill in missing_skills
+        ]
+
+    return [
+        "Review the Job Description and identify the core technical requirements.",
+        "Build a small portfolio project that demonstrates the most important job requirements.",
+        "Update your CV with measurable project outcomes and relevant keywords.",
+    ]

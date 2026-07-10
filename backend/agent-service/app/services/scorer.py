@@ -12,15 +12,7 @@ def calculate_required_skill_score(skill_matches: list[SkillMatch]) -> float:
 
 
 def calculate_fit_score(score_breakdown: ScoreBreakdown) -> float:
-    score = (
-        score_breakdown.required_skill_score * 0.45
-        + score_breakdown.preferred_skill_score * 0.20
-        + score_breakdown.experience_relevance_score * 0.15
-        + score_breakdown.project_domain_relevance_score * 0.10
-        + score_breakdown.education_cert_tool_score * 0.10
-    )
-
-    return round(score, 2)
+    return round(score_breakdown.required_skill_score, 2)
 
 
 def evaluate_fit_level(fit_score: float, missing_required_count: int) -> str:

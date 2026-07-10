@@ -15,6 +15,8 @@ Internal FastAPI service responsible for analyzing extracted CV text against Job
 ## Current Status
 
 This service currently provides foundation endpoints and deterministic rule-based scoring.
+
+The Phase 2 deterministic baseline focuses on known skill extraction, related-skill matching, required-skill scoring, fit-level evaluation, and conditional output placeholders.
 LangGraph, Gemini integration, embedding-based matching, and O*NET-based weighting are planned for later phases.
 
 ## Current Endpoints
@@ -63,6 +65,39 @@ Agent Service receives extracted CV text and JD text
 ```
 
 LangGraph orchestration, Gemini integration, embedding-based semantic matching, and O*NET-based weighting are not implemented yet.
+
+### Deterministic Baseline Rules
+
+Skill extraction currently uses a curated rule-based catalog with aliases for common backend, data, and AI skills.
+
+Matching rules:
+
+| Match Level | Similarity | Description |
+|---|---:|---|
+| `strong` | `1.0` | Exact canonical skill match after alias normalization. |
+| `partial` | `0.7` | Related deterministic match, for example `PostgreSQL` ↔ `SQL` or `REST API` ↔ `FastAPI`. |
+| `missing` | `0.0` | Required JD skill was not found in the CV skill set. |
+
+Current fit score baseline:
+
+```text
+fit_score = required_skill_score
+```
+
+`preferred_skill_score`, `experience_relevance_score`, `project_domain_relevance_score`, and `education_cert_tool_score` are kept in the response as placeholder fields with value `0.0`. They will be implemented in later phases.
+
+Fit level thresholds:
+
+| Fit Level | Rule |
+|---|---|
+| `high` | `fit_score >= 75` |
+| `medium` | `50 <= fit_score < 75` |
+| `low` | `fit_score < 50` |
+
+Additional downgrade rules:
+
+* If two or more required skills are missing, `high` is downgraded to `medium`.
+* If four or more required skills are missing, the result is `low`.
 
 Request content type:
 
