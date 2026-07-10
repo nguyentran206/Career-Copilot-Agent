@@ -16,17 +16,27 @@ For detailed MVP scope, input/output, and conditional outcomes, see [MVP Scope](
 * [Architecture Draft](docs/ARCHITECTURE_DRAFT.md)
 * [API Draft](docs/API_DRAFT.md)
 * [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
+* [Roadmap](docs/roadmap/README.md)
 * [Changelog](CHANGELOG.md)
 
 ## Tech Stack
 
-* Frontend: Next.js
-* Backend: FastAPI microservices
-* Agent Workflow: LangGraph
-* AI API: Gemini
-* Database: Supabase PostgreSQL
-* Storage: Supabase Storage
-* Deployment: Vercel + AWS
+Current backend foundation:
+
+* FastAPI microservices
+* PDF text extraction
+* Deterministic rule-based analysis baseline
+
+Planned AI and infrastructure components:
+
+* LangGraph
+* Gemini
+* Embedding-based semantic matching
+* Supabase
+* Next.js
+* AWS and Vercel
+
+For detailed implementation progress, see [Implementation Status](docs/IMPLEMENTATION_STATUS.md).
 
 ## Backend Services
 
@@ -34,83 +44,30 @@ The backend is organized as FastAPI microservices:
 
 * `backend/api-gateway`: public entry point for frontend requests.
 * `backend/document-parser-service`: internal service for extracting text from uploaded PDF documents.
-* `backend/agent-service`: planned internal service for running the LangGraph CV/JD analysis workflow.
+* `backend/agent-service`: internal service that currently exposes a deterministic rule-based CV/JD analysis baseline. LangGraph, Gemini, and embedding-based matching are planned for later phases.
+
+Agent Service currently uses a deterministic rule-based baseline and is not yet connected to API Gateway.
+
+For detailed implementation progress, see [Implementation Status](docs/IMPLEMENTATION_STATUS.md).
 
 For detailed service responsibilities, see [Architecture Draft](docs/ARCHITECTURE_DRAFT.md).  
-For endpoint contracts, see [API Draft](docs/API_DRAFT.md).
+
+For the API overview, see [API Draft](docs/API_DRAFT.md).
+
+For detailed request/response contracts, see each service README.
 
 ## Local Development
 
-### API Gateway
+Run each backend service in a separate terminal:
 
-```bash
-cd backend/api-gateway
-python -m venv .venv
+```text
+API Gateway:              http://127.0.0.1:8000
+Document Parser Service:  http://127.0.0.1:8001
+Agent Service:            http://127.0.0.1:8002
 ```
 
-Windows PowerShell:
+For installation, environment configuration, testing, and run commands, see:
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Create local environment file:
-
-```bash
-cp .env.example .env
-```
-
-Run service:
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-Open:
-
-```txt
-http://127.0.0.1:8000/docs
-```
-
-### Document Parser Service
-
-```bash
-cd backend/document-parser-service
-python -m venv .venv
-```
-
-Windows PowerShell:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Create local environment file:
-
-```bash
-cp .env.example .env
-```
-
-Run service:
-
-```bash
-uvicorn app.main:app --reload --port 8001
-```
-
-Open:
-
-```txt
-http://127.0.0.1:8001/docs
-```
+* [API Gateway README](backend/api-gateway/README.md)
+* [Document Parser Service README](backend/document-parser-service/README.md)
+* [Agent Service README](backend/agent-service/README.md)

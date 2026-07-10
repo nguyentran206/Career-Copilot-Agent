@@ -1,6 +1,8 @@
 # Implementation Status
 
-This document tracks the current implementation progress of the Career Copilot Agent MVP.
+This document is the source of truth for the current implementation progress of the Career Copilot Agent MVP.
+
+Architecture and API documents may describe target behavior. Current implementation status should be verified in this document.
 
 For MVP scope, see [MVP Scope](MVP_SCOPE.md).  
 For implementation history, see [Changelog](../CHANGELOG.md).
@@ -8,6 +10,12 @@ For implementation history, see [Changelog](../CHANGELOG.md).
 ## Current Status
 
 MVP is in development.
+
+API Gateway and Document Parser Service are connected in the current vertical slice.
+
+Agent Service foundation is implemented and can be tested independently through its health and analyze endpoints. Its current analyzer is a deterministic rule-based baseline.
+
+API Gateway integration with Agent Service, LangGraph orchestration, Gemini integration, and embedding-based semantic matching are not implemented yet.
 
 ## Completed Foundation
 
@@ -31,20 +39,24 @@ MVP is in development.
 * API Gateway JD text normalization and validation for `POST /api/v1/analyze`
 * API Gateway CV file empty and size validation before calling Document Parser Service
 * API Gateway parser response schema validation
-* Safer API Gateway handling for Document Parser error and non-JSON responses
+* Safer API Gateway handling for Document Parser error responses, including non-JSON error bodies
 * Clarified temporary analyze status as parser-completed instead of full analysis completed
 * Document Parser missing file behavior documented as FastAPI request validation
+* Agent Service initial FastAPI structure
+* Agent Service health check endpoint
+* Agent Service analyze endpoint
+* Agent Service request and response schemas
+* Deterministic rule-based analyzer baseline
+* Direct Agent Service analysis flow for local and Swagger testing
 
 ## Not Implemented Yet
 
 * Frontend Next.js application
-* Agent Service
 * API Gateway integration with Agent Service
 * LangGraph workflow
 * Gemini integration
 * Embedding-based skill matching
-* Fit score calculation
 * Supabase integration
 * Result persistence
 * Basic session status tracking
-* Full Agent-based `/analyze` flow
+* End-to-end API Gateway → Document Parser Service → Agent Service analysis flow
