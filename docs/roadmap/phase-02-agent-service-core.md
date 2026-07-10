@@ -104,3 +104,13 @@ Cần thêm test cho:
 - Scoring baseline có giải thích rõ.
 - Tests cover đủ high/medium/low.
 - Chưa cần LangGraph/Gemini.
+
+## Trạng thái triển khai
+
+Phase này tập trung vào deterministic baseline:
+
+- Mở rộng rule-based skill extraction.
+- Thêm related-skill matching ở mức deterministic.
+- Dùng required-skill score làm `fit_score` baseline.
+- Giữ các score breakdown chưa implement dưới dạng placeholder.
+- Cover test cho high, medium, low, partial match, no known JD skills, và validation.

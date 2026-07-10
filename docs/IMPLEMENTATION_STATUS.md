@@ -47,6 +47,11 @@ API Gateway integration with Agent Service, LangGraph orchestration, Gemini inte
 * Agent Service analyze endpoint
 * Agent Service request and response schemas
 * Deterministic rule-based analyzer baseline
+* Agent Service expanded rule-based skill extraction for backend, data, and AI skills
+* Agent Service deterministic related-skill matching with strong, partial, and missing match levels
+* Agent Service required-skill scoring baseline with placeholder score breakdown fields
+* Agent Service conditional output handling for high, medium, and low fit levels
+* Agent Service tests for high, medium, low, partial matching, no known JD skills, and validation cases
 * Direct Agent Service analysis flow for local and Swagger testing
 
 ## Not Implemented Yet
