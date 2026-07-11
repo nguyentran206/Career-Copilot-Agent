@@ -17,7 +17,7 @@ This README explains how to run and configure API Gateway locally.
 | Method | Endpoint         | Description                         |
 | ------ | ---------------- | ----------------------------------- |
 | GET    | `/api/v1/health` | Check if the API Gateway is running |
-| POST | `/api/v1/analyze` | Parse uploaded CV through Document Parser Service and return temporary analysis response |
+| POST | `/api/v1/analyze` | Parse uploaded CV through Document Parser Service, analyze it through Agent Service, and return analysis response |
 
 ## API Contract
 
@@ -54,10 +54,11 @@ Current behavior:
 API Gateway receives CV PDF and JD text
 → validates the basic request
 → sends the CV PDF to Document Parser Service
-→ returns a parser-based temporary response
+→ sends extracted CV text and normalized JD text to Agent Service
+→ returns a completed analysis response
 ```
 
-Agent Service integration is not implemented yet.
+This is currently a synchronous backend flow. Session-based processing will be added in a later phase.
 
 Request content type:
 
@@ -72,12 +73,12 @@ Request fields:
 | `cv_file` | PDF file | Yes | Candidate CV in PDF format |
 | `jd_text` | string | Yes | Job Description text |
 
-Successful temporary response:
+Successful response:
 
 ```json
 {
-  "status": "parser_completed",
-  "message": "CV parsed successfully. Agent analysis is not implemented yet.",
+  "status": "completed",
+  "message": "CV parsed and analyzed successfully.",
   "cv_parse_result": {
     "filename": "cv.pdf",
     "document_type": "cv",
@@ -87,8 +88,25 @@ Successful temporary response:
     "text_length": 5421,
     "warnings": []
   },
-  "jd_text_length": 1200,
-  "text_preview": "First 300 characters of extracted CV text..."
+  "analysis_result": {
+    "fit_score": 78,
+    "fit_level": "medium",
+    "score_breakdown": {
+      "required_skill_score": 78,
+      "preferred_skill_score": 0,
+      "experience_relevance_score": 0,
+      "project_domain_relevance_score": 0,
+      "education_cert_tool_score": 0
+    },
+    "parsed_cv": {},
+    "parsed_jd": {},
+    "skill_matches": [],
+    "matched_skills": ["Python", "FastAPI"],
+    "missing_skills": ["Docker"],
+    "cv_improvement_suggestions": [],
+    "cover_letter": "Cover letter generation will be implemented in a later phase.",
+    "learning_roadmap": null
+  }
 }
 ```
 
@@ -99,11 +117,16 @@ Error responses:
 | 400 | `JD_TEXT_REQUIRED` | Job Description text is blank after normalization. |
 | 400 | `JD_TEXT_TOO_SHORT` | Job Description text is shorter than the minimum allowed length. |
 | 400 | `EMPTY_CV_FILE` | Uploaded CV file is empty. |
+| 400 | `CV_TEXT_TOO_SHORT` | Extracted CV text is too short for analysis, usually because the PDF is scanned or image-based. |
 | 413 | `JD_TEXT_TOO_LONG` | Job Description text exceeds the maximum allowed length. |
 | 413 | `CV_FILE_TOO_LARGE` | Uploaded CV file exceeds the API Gateway size limit. |
 | 422 | FastAPI validation error | Required multipart field `cv_file` or `jd_text` is missing. |
 | 503 | `DOCUMENT_PARSER_UNAVAILABLE` | API Gateway cannot reach Document Parser Service. |
+| 503 | `AGENT_SERVICE_UNAVAILABLE` | API Gateway cannot reach Agent Service. |
+| 502 | `DOCUMENT_PARSER_INVALID_RESPONSE` | Document Parser Service returned an invalid success response. |
+| 502 | `AGENT_SERVICE_INVALID_RESPONSE` | Agent Service returned an invalid success response. |
 | Upstream status | `DOCUMENT_PARSER_ERROR` | Document Parser Service returned an error while parsing the CV. |
+| Upstream status | `AGENT_SERVICE_ERROR` | Agent Service returned an error while analyzing the CV and JD. |
 
 ## Environment Variables
 
@@ -194,10 +217,9 @@ http://127.0.0.1:8000/docs
 The API Gateway currently provides:
 
 * Health check endpoint
-* Temporary analyze endpoint that calls Document Parser Service
+* Analyze endpoint that calls Document Parser Service and Agent Service
 
-Full Agent analysis and session-based processing are not implemented yet.
-Routing to Agent Service will be added in a future phase.
+Session-based processing is not implemented yet.
 
 ## Related Documentation
 

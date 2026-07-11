@@ -40,7 +40,7 @@ Kỳ vọng:
 
 ### 3. Đồng bộ temporary analyze status
 
-Chuẩn hiện tại:
+Chuẩn của Phase 1 parser-only response:
 
 ```json
 {
@@ -49,6 +49,8 @@ Chuẩn hiện tại:
 ```
 
 Lý do: tránh hiểu nhầm rằng full Agent analysis đã hoàn tất.
+
+Lưu ý: từ Phase 3 trở đi, public `/api/v1/analyze` trả `status = completed` vì Gateway đã gọi Agent Service và trả kết quả phân tích.
 
 ### 4. Đồng bộ env config
 

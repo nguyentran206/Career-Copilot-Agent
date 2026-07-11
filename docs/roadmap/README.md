@@ -6,9 +6,9 @@ Tài liệu này mô tả các phase tiếp theo để đưa Career Copilot Agen
 
 Project hiện đã có nền backend microservices:
 
-- `api-gateway`: nhận CV PDF và JD text, validate input, gọi Document Parser Service, trả response parser-based tạm thời.
+- `api-gateway`: nhận CV PDF và JD text, validate input, gọi Document Parser Service, sau đó gọi Agent Service để trả analysis response.
 - `document-parser-service`: validate PDF, extract raw text bằng PyMuPDF, trả metadata và warning cho PDF ít text/scanned.
-- `agent-service`: đã có skeleton FastAPI và deterministic rule-based analyzer, nhưng chưa được API Gateway tích hợp và chưa dùng LangGraph/Gemini/embedding.
+- `agent-service`: đã có deterministic rule-based analyzer baseline và được API Gateway gọi trong backend E2E flow.
 
 Frontend, session tracking, persistence, deployment production và AI workflow thật vẫn chưa hoàn thiện.
 
@@ -18,6 +18,7 @@ Frontend, session tracking, persistence, deployment production và AI workflow t
 - Không đưa Supabase/deployment/frontend nâng cao vào trước khi backend analysis contract ổn định.
 - Agent output contract cần được chốt trước khi frontend render result.
 - Deterministic rule-based logic nên được dùng làm baseline trước, sau đó mới thay dần bằng Gemini/LangGraph/embedding.
+- JD luôn là nguồn thông tin chính cho yêu cầu công việc; các nguồn như O*NET chỉ được dùng như occupational prior bổ sung, không thay thế JD.
 
 ## Danh sách phase đề xuất
 
@@ -28,7 +29,7 @@ Frontend, session tracking, persistence, deployment production và AI workflow t
 | Phase 03 | Tích hợp API Gateway với Agent Service để có backend E2E flow | [Phase 03](phase-03-gateway-agent-integration.md) |
 | Phase 04 | Thêm session tracking MVP | [Phase 04](phase-04-session-tracking.md) |
 | Phase 05 | Xây frontend MVP | [Phase 05](phase-05-frontend-mvp.md) |
-| Phase 06 | Nâng cấp Agent bằng LangGraph, Gemini và embedding matching | [Phase 06](phase-06-ai-agent-upgrade.md) |
+| Phase 06 | Nâng cấp scoring intelligence, O*NET occupational prior, LangGraph/Gemini và embedding matching | [Phase 06](phase-06-ai-agent-upgrade.md) |
 | Phase 07 | Thêm Supabase persistence và storage | [Phase 07](phase-07-supabase-persistence.md) |
 | Phase 08 | Chuẩn bị deployment, observability và production hardening | [Phase 08](phase-08-deployment-hardening.md) |
 
@@ -36,11 +37,11 @@ Frontend, session tracking, persistence, deployment production và AI workflow t
 
 Ưu tiên gần nhất:
 
-1. Phase 01: sửa các điểm foundation còn lệch nhau.
-2. Phase 02: chốt Agent Service contract và scoring baseline.
-3. Phase 03: nối API Gateway với Agent Service để có backend E2E.
+1. Phase 04: thêm session tracking MVP nếu cần chuẩn bị cho request dài hơn.
+2. Phase 05: xây frontend MVP để demo end-to-end.
+3. Phase 06: nâng cấp scoring intelligence, bao gồm O*NET occupational prior và AI/semantic matching.
 
-Sau khi backend E2E ổn định, mới nên làm frontend MVP và AI upgrade.
+Sau khi backend E2E ổn định, có thể ưu tiên session/frontend để hoàn thiện MVP demo trước khi nâng cấp scoring intelligence sâu hơn.
 
 ## Definition of MVP Done
 

@@ -100,3 +100,14 @@ Test nên cover:
 - Không còn chỉ trả parser preview.
 - Gateway validate được response từ cả Document Parser và Agent Service.
 - Test cover lỗi của từng upstream service.
+
+## Trạng thái triển khai
+
+Phase này tập trung vào synchronous backend E2E flow:
+
+- API Gateway gọi Document Parser Service để extract CV text.
+- API Gateway gọi Agent Service với `cv_text` và normalized `jd_text`.
+- Public `/api/v1/analyze` trả `status = completed` kèm `analysis_result`.
+- Gateway xử lý CV text quá ngắn trước khi phân tích.
+- Gateway chuẩn hóa lỗi Agent Service unavailable, Agent Service error, và invalid Agent response.
+- Session tracking vẫn để Phase 04.

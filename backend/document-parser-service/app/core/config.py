@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "document-parser-service"
+    app_name: str = "Career Copilot - Document Parser Service"
     app_env: str = "development"
     app_version: str = "0.1.0"
 
