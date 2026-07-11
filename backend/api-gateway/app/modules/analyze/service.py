@@ -2,9 +2,12 @@ import httpx
 from fastapi import HTTPException, UploadFile, status
 
 from pydantic import ValidationError
-from app.modules.analyze.schemas import DocumentParserResponse
+from app.modules.analyze.schemas import AgentAnalyzeResponse, DocumentParserResponse
 
 from app.core.config import settings
+
+
+MIN_EXTRACTED_CV_TEXT_LENGTH = 50
 
 
 async def parse_cv_with_document_parser(cv_file: UploadFile) -> DocumentParserResponse:
@@ -71,4 +74,81 @@ async def parse_cv_with_document_parser(cv_file: UploadFile) -> DocumentParserRe
             },
         )
 
-    return DocumentParserResponse(**response.json())
+    try:
+        return DocumentParserResponse(**response.json())
+    except (ValueError, ValidationError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail={
+                "code": "DOCUMENT_PARSER_INVALID_RESPONSE",
+                "message": "Document Parser Service returned an invalid response.",
+            },
+        ) from exc
+
+
+async def analyze_cv_with_agent_service(
+    cv_text: str,
+    jd_text: str,
+    parser_warnings: list[str] | None = None,
+) -> AgentAnalyzeResponse:
+    normalized_cv_text = " ".join(cv_text.split())
+
+    if len(normalized_cv_text) < MIN_EXTRACTED_CV_TEXT_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "CV_TEXT_TOO_SHORT",
+                "message": (
+                    "Extracted CV text is too short for analysis. "
+                    "The PDF may be scanned or image-based."
+                ),
+                "parser_warnings": parser_warnings or [],
+            },
+        )
+
+    url = f"{settings.agent_service_url}/api/v1/analyze"
+
+    payload = {
+        "cv_text": normalized_cv_text,
+        "jd_text": jd_text,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=settings.request_timeout_seconds) as client:
+            response = await client.post(url, json=payload)
+    except httpx.RequestError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "code": "AGENT_SERVICE_UNAVAILABLE",
+                "message": "Agent Service is unavailable.",
+            },
+        ) from exc
+
+    if response.status_code >= 400:
+        try:
+            agent_detail = response.json()
+        except ValueError:
+            agent_detail = {
+                "raw_response": response.text[:500]
+            }
+
+        raise HTTPException(
+            status_code=response.status_code,
+            detail={
+                "code": "AGENT_SERVICE_ERROR",
+                "message": "Agent Service failed to analyze the CV and Job Description.",
+                "agent_detail": agent_detail,
+            },
+        )
+
+    try:
+        return AgentAnalyzeResponse(**response.json())
+    except (ValueError, ValidationError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail={
+                "code": "AGENT_SERVICE_INVALID_RESPONSE",
+                "message": "Agent Service returned an invalid response.",
+            },
+        ) from exc

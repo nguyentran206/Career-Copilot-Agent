@@ -2,7 +2,10 @@ from fastapi import APIRouter, File, Form, UploadFile
 from app.modules.analyze.helper import normalize_jd_text
 
 from app.modules.analyze.schemas import AnalyzeResponse, CVParseSummary
-from app.modules.analyze.service import parse_cv_with_document_parser
+from app.modules.analyze.service import (
+    analyze_cv_with_agent_service,
+    parse_cv_with_document_parser,
+)
 
 router = APIRouter()
 
@@ -16,12 +19,15 @@ async def analyze_cv(
 
     parse_result = await parse_cv_with_document_parser(cv_file)
 
-    cv_text = parse_result.text
-    text_preview = cv_text[:300] if cv_text else None
+    analysis_result = await analyze_cv_with_agent_service(
+        cv_text=parse_result.text,
+        jd_text=normalized_jd_text,
+        parser_warnings=parse_result.warnings,
+    )
 
     return AnalyzeResponse(
-        status="parser_completed",
-        message="CV parsed successfully. Agent analysis is not implemented yet.",
+        status="completed",
+        message="CV parsed and analyzed successfully.",
         cv_parse_result=CVParseSummary(
             filename=parse_result.filename,
             document_type=parse_result.document_type,
@@ -31,6 +37,5 @@ async def analyze_cv(
             text_length=parse_result.text_length,
             warnings=parse_result.warnings,
         ),
-        jd_text_length=len(normalized_jd_text),
-        text_preview=text_preview,
+        analysis_result=analysis_result,
     )
