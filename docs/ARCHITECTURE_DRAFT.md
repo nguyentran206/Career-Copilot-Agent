@@ -22,11 +22,9 @@ For detailed implementation progress, see [Implementation Status](IMPLEMENTATION
 Client
   → API Gateway
       → Document Parser Service
-
-Direct API client
-  → Agent Service
+      → Agent Service
 ```
-Agent Service currently runs independently and is not yet connected to API Gateway.
+Agent Service can also be tested directly during local development.
 
 ---
 
@@ -60,7 +58,7 @@ Planned deployment:
 
 The API Gateway is the public backend entry point. It validates public requests, coordinates calls to internal services, and converts internal responses into the public API response.
 
-The current implementation calls Document Parser Service. Agent Service integration is part of the target MVP flow.
+The current implementation calls Document Parser Service and then Agent Service in a synchronous backend flow.
 
 For implementation and local development, see [API Gateway README](../backend/api-gateway/README.md).
 
@@ -93,10 +91,12 @@ Client sends CV PDF and JD text to API Gateway
 → API Gateway validates the request
 → API Gateway sends the CV PDF to Document Parser Service
 → Document Parser Service extracts CV text and metadata
-→ API Gateway returns a parser-based temporary response
+→ API Gateway sends extracted CV text and normalized JD text to Agent Service
+→ Agent Service returns deterministic analysis result
+→ API Gateway returns a completed analysis response
 ```
 
-Agent Service can currently be tested directly through its own API, but it is not part of the API Gateway flow yet.
+Session tracking is not implemented yet.
 
 ---
 
@@ -109,12 +109,12 @@ Agent Service can currently be tested directly through its own API, but it is no
 5. Document Parser Service extracts raw text from the CV PDF.
 6. Document Parser Service returns `cv_text`, metadata, and warnings.
 7. API Gateway sends `cv_text` and `jd_text` to Agent Service.
-8. LangGraph Agent parses the CV and JD into structured data.
-9. Agent performs skill matching using embedding-based similarity.
+8. Agent Service parses the CV and JD into structured data.
+9. Agent performs skill matching.
 10. Agent calculates a fit score from 0 to 100.
 11. Agent identifies matched skills, missing skills, and weak areas.
 12. Agent decides the response strategy based on fit score according to [MVP Scope](MVP_SCOPE.md).
-13. Future phase: save the analysis result to Supabase.
+13. Future phase: add LangGraph, Gemini, embedding-based matching, and Supabase persistence.
 14. Frontend displays the personalized result.
 
 ---

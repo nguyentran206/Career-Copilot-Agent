@@ -21,16 +21,14 @@ It intentionally does not duplicate detailed request/response contracts. Detaile
 Client
   → API Gateway
       → Document Parser Service
-
-Direct API client / developer
-  → Agent Service
+      → Agent Service
 ```
 
 Current notes:
 
-* API Gateway currently calls Document Parser Service.
-* Agent Service currently exposes an independent deterministic analysis endpoint.
-* API Gateway does not call Agent Service yet.
+* API Gateway currently calls Document Parser Service to extract CV text.
+* API Gateway then calls Agent Service to analyze extracted CV text against JD text.
+* Agent Service also exposes its own deterministic analysis endpoint for direct local testing.
 
 ## Target MVP Topology
 
@@ -55,7 +53,7 @@ Agent Service/API Gateway
 | Service | Exposure | Method | Endpoint | Status | Detailed docs |
 |---|---|---|---|---|---|
 | API Gateway | Public | GET | `/api/v1/health` | Implemented | [API Gateway README](../backend/api-gateway/README.md) |
-| API Gateway | Public | POST | `/api/v1/analyze` | Implemented temporary parser-based response | [API Gateway README](../backend/api-gateway/README.md) |
+| API Gateway | Public | POST | `/api/v1/analyze` | Implemented synchronous parser + agent analysis response | [API Gateway README](../backend/api-gateway/README.md) |
 | API Gateway | Public | GET | `/api/v1/session/{session_id}` | Planned | [API Gateway README](../backend/api-gateway/README.md) |
 | Document Parser Service | Internal | GET | `/api/v1/health` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
 | Document Parser Service | Internal | POST | `/api/v1/parse-document` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
@@ -64,7 +62,6 @@ Agent Service/API Gateway
 
 ## Status Notes
 
-* `POST /api/v1/analyze` in API Gateway currently returns a parser-based temporary response with status `parser_completed`.
-* Agent Service currently exposes a deterministic rule-based analysis baseline and can be tested directly.
-* API Gateway does not call Agent Service yet.
+* `POST /api/v1/analyze` in API Gateway currently returns a synchronous analysis response with status `completed`.
+* Agent Service currently uses a deterministic rule-based analysis baseline and can still be tested directly.
 * Session-based processing is planned for a later phase.

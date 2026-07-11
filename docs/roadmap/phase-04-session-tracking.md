@@ -6,6 +6,8 @@ Thêm basic in-memory session tracking để frontend có thể theo dõi trạn
 
 Phase này chuẩn bị nền cho workflow AI lâu hơn khi thêm Gemini/LangGraph.
 
+O*NET occupational prior không nằm trong Phase 04. Phase này chỉ xử lý session lifecycle và background processing. O*NET nên được đưa vào phase scoring intelligence sau khi backend E2E/session contract đã ổn định.
+
 ## API đề xuất
 
 ### Start analysis

@@ -46,7 +46,7 @@ The backend is organized as FastAPI microservices:
 * `backend/document-parser-service`: internal service for extracting text from uploaded PDF documents.
 * `backend/agent-service`: internal service that currently exposes a deterministic rule-based CV/JD analysis baseline. LangGraph, Gemini, and embedding-based matching are planned for later phases.
 
-Agent Service currently uses a deterministic rule-based baseline and is not yet connected to API Gateway.
+API Gateway currently coordinates the backend synchronous flow by calling Document Parser Service first, then Agent Service.
 
 For detailed implementation progress, see [Implementation Status](docs/IMPLEMENTATION_STATUS.md).
 
