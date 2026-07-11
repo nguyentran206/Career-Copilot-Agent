@@ -20,7 +20,7 @@ async def analyze_cv(
     text_preview = cv_text[:300] if cv_text else None
 
     return AnalyzeResponse(
-        status="completed",
+        status="parser_completed",
         message="CV parsed successfully. Agent analysis is not implemented yet.",
         cv_parse_result=CVParseSummary(
             filename=parse_result.filename,

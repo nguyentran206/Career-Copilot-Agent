@@ -18,6 +18,10 @@ Microservice responsible for extracting raw text from uploaded PDF documents.
 
 ## API Contract
 
+This README is the canonical detailed API contract for Document Parser Service.
+
+For the system-wide endpoint registry, see [API Draft](../../docs/API_DRAFT.md).
+
 ### Parse Document
 
 Extract text content from an uploaded PDF document.

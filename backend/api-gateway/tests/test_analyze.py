@@ -95,7 +95,7 @@ def test_analyze_success_with_mocked_document_parser():
     assert response.status_code == 200
 
     data = response.json()
-    assert data["status"] == "completed"
+    assert data["status"] == "parser_completed"
     assert data["message"] == "CV parsed successfully. Agent analysis is not implemented yet."
     assert data["cv_parse_result"]["filename"] == "cv.pdf"
     assert data["cv_parse_result"]["document_type"] == "cv"

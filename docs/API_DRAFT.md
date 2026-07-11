@@ -1,195 +1,70 @@
 # API Draft
 
-## Overview
+## Purpose
 
-This document defines the initial API contract for the Career Copilot Agent MVP.
+This document is the high-level API overview and endpoint registry for the Career Copilot Agent MVP.
 
-The system follows a microservice-based backend architecture:
+It intentionally does not duplicate detailed request/response contracts. Detailed endpoint contracts, error responses, environment variables, and local run instructions are documented in each service README.
+
+## Source of Truth Policy
+
+| Information Type | Source of Truth |
+|---|---|
+| Current implementation progress | [Implementation Status](IMPLEMENTATION_STATUS.md) |
+| System architecture and current/target flow | [Architecture Draft](ARCHITECTURE_DRAFT.md) |
+| Endpoint registry and ownership | This document |
+| Detailed endpoint contracts | Service README files |
+
+## Current Runtime Topology
 
 ```text
-Frontend → API Gateway
-API Gateway → Document Parser Service
-API Gateway → Agent Service
-Agent Service → Gemini
-Future: Agent Service/API Gateway → Supabase
+Client
+  → API Gateway
+      → Document Parser Service
+
+Direct API client / developer
+  → Agent Service
 ```
 
-The API Gateway exposes public endpoints to the frontend. Internal services such as Document Parser Service and Agent Service are called by the API Gateway or backend workflow.
+Current notes:
 
----
+* API Gateway currently calls Document Parser Service.
+* Agent Service currently exposes an independent deterministic analysis endpoint.
+* API Gateway does not call Agent Service yet.
 
-## Public API Gateway Endpoints
+## Target MVP Topology
 
-### POST /api/v1/analyze
+```text
+Frontend
+  → API Gateway
+      → Document Parser Service
+      → Agent Service
+          → LangGraph workflow
+          → Gemini
+          → Embedding model
 
-Analyze a CV against a Job Description.
-
-This endpoint receives the user's CV PDF and Job Description text, then starts the analysis workflow.
-
-### Request
-
-Content type: `multipart/form-data`
-
-| Field   | Type     | Required | Description                |
-| ------- | -------- | -------- | -------------------------- |
-| cv_file | PDF file | Yes      | Candidate CV in PDF format |
-| jd_text | string   | Yes      | Job Description text       |
-
-Current implementation returns a temporary parser-based response. Full fit scoring and Agent analysis will be added in a later phase.
-
-### Current Temporary Response
-
-Current implementation returns a parser-based response. Full Agent analysis and session-based processing will be added in a later phase.
-
-```json
-{
-  "status": "completed",
-  "message": "CV parsed successfully. Agent analysis is not implemented yet.",
-  "cv_parse_result": {
-    "filename": "cv.pdf",
-    "document_type": "cv",
-    "content_type": "application/pdf",
-    "file_size_bytes": 245321,
-    "page_count": 2,
-    "text_length": 5421,
-    "warnings": []
-  },
-  "jd_text_length": 1200,
-  "text_preview": "First 300 characters of extracted CV text..."
-}
-```
-
-### Future Session-Based Response
-
-```json
-{
-  "session_id": "string",
-  "status": "processing"
-}
-```
-
-### GET /api/v1/session/{session_id}
-
-Get the analysis status and result by session ID.
-
-### Path Parameters
-
-| Parameter  | Type   | Required | Description         |
-| ---------- | ------ | -------- | ------------------- |
-| session_id | string | Yes      | Analysis session ID |
-
-### Response: Processing
-
-```json
-{
-  "session_id": "string",
-  "status": "processing",
-  "result": null
-}
-```
-
-### Response: Completed
-
-```json
-{
-  "session_id": "string",
-  "status": "completed",
-  "result": {
-    "fit_score": 78,
-    "fit_level": "medium",
-    "parsed_cv": {},
-    "parsed_jd": {},
-    "matched_skills": ["Python", "FastAPI"],
-    "missing_skills": ["AWS", "Docker"],
-    "cv_improvement_suggestions": [],
-    "cover_letter": "Generated cover letter content...",
-    "learning_roadmap": null
-  }
-}
-```
-
-### Conditional Result Fields
-
-`cv_improvement_suggestions`, `cover_letter`, and `learning_roadmap` depend on the fit level.
-
-| Fit Level | cv_improvement_suggestions | cover_letter | learning_roadmap |
-|---|---|---|---|
-| high | [] | string | null |
-| medium | array | string | null |
-| low | array | null | array |
-
-Rules:
-
-* `cv_improvement_suggestions` should always be an array.
-* If there are no CV improvement suggestions, return an empty array `[]`.
-* Non-applicable object/string fields should be returned as `null`.
-
-### Response: Failed
-
-```json
-{
-  "session_id": "string",
-  "status": "failed",
-  "error": {
-    "code": "ANALYSIS_FAILED",
-    "message": "Unable to complete analysis."
-  }
-}
+Future:
+Agent Service/API Gateway
+  → Supabase
 ```
 
 ---
 
-## Internal Service Endpoints
+## API Registry
 
-### Document Parser Service
+| Service | Exposure | Method | Endpoint | Status | Detailed docs |
+|---|---|---|---|---|---|
+| API Gateway | Public | GET | `/api/v1/health` | Implemented | [API Gateway README](../backend/api-gateway/README.md) |
+| API Gateway | Public | POST | `/api/v1/analyze` | Implemented temporary parser-based response | [API Gateway README](../backend/api-gateway/README.md) |
+| API Gateway | Public | GET | `/api/v1/session/{session_id}` | Planned | [API Gateway README](../backend/api-gateway/README.md) |
+| Document Parser Service | Internal | GET | `/api/v1/health` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
+| Document Parser Service | Internal | POST | `/api/v1/parse-document` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
+| Agent Service | Internal/direct local | GET | `/api/v1/health` | Implemented | [Agent Service README](../backend/agent-service/README.md) |
+| Agent Service | Internal/direct local | POST | `/api/v1/analyze` | Implemented deterministic baseline | [Agent Service README](../backend/agent-service/README.md) |
 
-#### POST /api/v1/parse-document
+## Status Notes
 
-Extract raw text content from an uploaded PDF document.
-
-This endpoint is owned by `document-parser-service`.
-
-### Request
-
-Content type: `multipart/form-data`
-
-| Field         | Type     | Required | Description                                      |
-| ------------- | -------- | -------- | ------------------------------------------------ |
-| file          | PDF file | Yes      | PDF document to parse                            |
-| document_type | string   | No       | Optional document type, for example `cv` or `jd` |
-
-### Successful Response
-
-```json
-{
-  "filename": "cv.pdf",
-  "document_type": "cv",
-  "content_type": "application/pdf",
-  "file_size_bytes": 245321,
-  "page_count": 2,
-  "text": "Extracted CV text here...",
-  "text_length": 5421,
-  "warnings": []
-}
-```
-
-### Response With Warning
-
-If the PDF appears to be scanned or contains too little extractable text, the service returns a successful response with a warning.
-
-```json
-{
-  "filename": "cv_scan.pdf",
-  "document_type": "cv",
-  "content_type": "application/pdf",
-  "file_size_bytes": 512331,
-  "page_count": 2,
-  "text": "",
-  "text_length": 0,
-  "warnings": [
-    "NO_TEXT_EXTRACTED_OR_SCANNED_PDF"
-  ]
-}
-```
-
-
+* `POST /api/v1/analyze` in API Gateway currently returns a parser-based temporary response with status `parser_completed`.
+* Agent Service currently exposes a deterministic rule-based analysis baseline and can be tested directly.
+* API Gateway does not call Agent Service yet.
+* Session-based processing is planned for a later phase.

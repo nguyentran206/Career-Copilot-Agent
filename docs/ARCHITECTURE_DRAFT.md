@@ -8,17 +8,49 @@ The system does not only return a fit score. The Agent Service follows the MVP d
 
 ---
 
-## Deployment
+## Architecture Status
+
+This document describes both the current system topology and the target MVP architecture.
+
+For detailed implementation progress, see [Implementation Status](IMPLEMENTATION_STATUS.md).
+
+---
+
+## Current Local Architecture
+
+```text
+Client
+  → API Gateway
+      → Document Parser Service
+
+Direct API client
+  → Agent Service
+```
+Agent Service currently runs independently and is not yet connected to API Gateway.
+
+---
+
+## Target MVP Architecture
+```text
+Frontend
+  → API Gateway
+      → Document Parser Service
+      → Agent Service
+          → LangGraph workflow
+          → Gemini API
+          → Embedding model
+
+Future:
+Agent Service/API Gateway
+  → Supabase
+```
+
+Planned deployment:
 
 * Frontend: Next.js on Vercel
 * Backend: FastAPI microservices on AWS
-* API Gateway: Public entry point for frontend requests
-* Document Parser Service: Extracts raw text from uploaded PDF documents
-* Agent Service: Runs LangGraph workflow for CV/JD analysis
 * Database: Supabase PostgreSQL
 * Storage: Supabase Storage
-* AI API: Gemini API
-* Embedding Model: Used for skill similarity matching
 
 ---
 
@@ -26,99 +58,49 @@ The system does not only return a fit score. The Agent Service follows the MVP d
 
 ### API Gateway
 
-Responsibilities:
+The API Gateway is the public backend entry point. It validates public requests, coordinates calls to internal services, and converts internal responses into the public API response.
 
-* Receive requests from the frontend
-* Expose public API endpoints
-* Handle CORS configuration
-* Provide gateway health check
-* Route requests to internal services in future phases
+The current implementation calls Document Parser Service. Agent Service integration is part of the target MVP flow.
 
-Current service port:
-
-```text
-http://127.0.0.1:8000
-```
-
-Current endpoint:
-
-```text
-GET /api/v1/health
-POST /api/v1/analyze
-```
-
-Current POST /api/v1/analyze behavior:
-
-```text
-API Gateway receives CV PDF and JD text
-→ calls Document Parser Service
-→ returns temporary parser-based response
-```
-
-Future endpoints:
-
-```text
-GET /api/v1/session/{session_id}
-```
+For implementation and local development, see [API Gateway README](../backend/api-gateway/README.md).
 
 ---
 
 ### Document Parser Service
 
-Responsibilities:
+The Document Parser Service validates uploaded PDF documents and extracts raw text and document metadata.
 
-* Receive uploaded PDF documents
-* Validate uploaded file type and size
-* Extract raw text from PDF files
-* Return extracted text and document metadata to API Gateway.
+It is responsible only for document parsing and does not perform CV/JD analysis.
 
-Current service port:
-
-```text
-http://127.0.0.1:8001
-```
-
-Current endpoints:
-
-```text
-GET /api/v1/health
-POST /api/v1/parse-document
-```
-
-Current MVP usage:
-
-* Parse CV PDF into raw text.
-* JD is currently expected as plain text in the main analysis flow.
-* JD PDF parsing may be supported in a future phase.
-* OCR is not included in the MVP.
-* Scanned PDFs may return empty or very short text with a warning.
+For implementation and local development, see [Document Parser Service README](../backend/document-parser-service/README.md).
 
 ---
 
 ### Agent Service
 
-Responsibilities:
+The Agent Service analyzes extracted CV text against Job Description text, calculates job fit, and selects the appropriate recommendation output.
 
-* Parse CV text into structured information
-* Parse JD text into structured requirements
-* Match CV skills against JD requirements
-* Calculate fit score from 0 to 100
-* Evaluate fit level: `high`, `medium`, or `low`
-* Generate CV improvement suggestions
-* Generate cover letter for high and medium fit
-* Generate learning roadmap for low fit
-* Return final analysis result
-* Future: save analysis result to Supabase
+The current implementation uses a deterministic rule-based baseline. The target architecture introduces LangGraph orchestration, Gemini, and embedding-based semantic matching.
 
-Planned service port:
-
-```text
-http://127.0.0.1:8002
-```
+For implementation and local development, see [Agent Service README](../backend/agent-service/README.md).
 
 ---
 
-## Main Flow
+## Current Implemented Flow
+
+```text
+Client sends CV PDF and JD text to API Gateway
+→ API Gateway validates the request
+→ API Gateway sends the CV PDF to Document Parser Service
+→ Document Parser Service extracts CV text and metadata
+→ API Gateway returns a parser-based temporary response
+```
+
+Agent Service can currently be tested directly through its own API, but it is not part of the API Gateway flow yet.
+
+---
+
+## Target MVP Flow
 
 1. User uploads a CV PDF and enters Job Description text.
 2. Frontend sends `cv_file` and `jd_text` to API Gateway.
@@ -136,33 +118,3 @@ http://127.0.0.1:8002
 14. Frontend displays the personalized result.
 
 ---
-
-## Current Implemented Flow
-
-```text
-User uploads CV PDF and enters JD text through API Gateway Swagger
-→ API Gateway calls Document Parser Service
-→ Document Parser Service extracts CV text
-→ API Gateway returns parser metadata, JD text length, and text preview
-```
-
-Full Agent analysis is not implemented yet.
-
----
-
-## Agent Nodes
-
-### MVP Nodes
-
-* parse_cv_node
-* parse_jd_node
-* match_skills_node
-* calculate_fit_score_node
-* evaluate_fit_level_node
-* suggest_improvements_node
-* generate_cover_letter_node
-* generate_roadmap_node
-
-### Future Nodes
-
-* save_result_node
