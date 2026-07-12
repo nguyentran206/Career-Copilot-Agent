@@ -117,3 +117,13 @@ Cần test:
 - Frontend có thể start analysis và poll result.
 - Session contract khớp `API_DRAFT.md`.
 - In-memory limitation được document rõ.
+
+## Trạng thái triển khai
+
+Phase này triển khai session tracking ở API Gateway:
+
+- `POST /api/v1/analyze` tạo in-memory session và trả `session_id` với `status = processing`.
+- Background task chạy workflow Document Parser Service → Agent Service.
+- `GET /api/v1/session/{session_id}` trả `processing`, `completed`, hoặc `failed`.
+- Session store hiện là in-memory và mất dữ liệu khi API Gateway restart.
+- Supabase persistence và production-grade queue chưa nằm trong phase này.

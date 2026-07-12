@@ -21,8 +21,10 @@ For detailed implementation progress, see [Implementation Status](IMPLEMENTATION
 ```text
 Client
   → API Gateway
-      → Document Parser Service
-      → Agent Service
+      → In-memory session store
+      → Background analysis task
+          → Document Parser Service
+          → Agent Service
 ```
 Agent Service can also be tested directly during local development.
 
@@ -58,7 +60,7 @@ Planned deployment:
 
 The API Gateway is the public backend entry point. It validates public requests, coordinates calls to internal services, and converts internal responses into the public API response.
 
-The current implementation calls Document Parser Service and then Agent Service in a synchronous backend flow.
+The current implementation starts an in-memory analysis session, then runs Document Parser Service and Agent Service in a background analysis task.
 
 For implementation and local development, see [API Gateway README](../backend/api-gateway/README.md).
 
@@ -89,14 +91,17 @@ For implementation and local development, see [Agent Service README](../backend/
 ```text
 Client sends CV PDF and JD text to API Gateway
 → API Gateway validates the request
-→ API Gateway sends the CV PDF to Document Parser Service
+→ API Gateway creates an in-memory analysis session
+→ API Gateway returns session_id with status processing
+→ Background task sends the CV PDF to Document Parser Service
 → Document Parser Service extracts CV text and metadata
-→ API Gateway sends extracted CV text and normalized JD text to Agent Service
+→ Background task sends extracted CV text and normalized JD text to Agent Service
 → Agent Service returns deterministic analysis result
-→ API Gateway returns a completed analysis response
+→ API Gateway stores completed result or failed error in the session store
+→ Client polls GET /api/v1/session/{session_id}
 ```
 
-Session tracking is not implemented yet.
+Session tracking is implemented with an in-memory store for MVP. Sessions are lost when API Gateway restarts.
 
 ---
 

@@ -75,8 +75,17 @@ class AgentAnalyzeResponse(BaseModel):
     learning_roadmap: list[str] | None = None
 
 
+class AnalysisResultPayload(BaseModel):
+    cv_parse_result: CVParseSummary
+    analysis_result: AgentAnalyzeResponse
+
+
 class AnalyzeResponse(BaseModel):
     status: str
     message: str
-    cv_parse_result: CVParseSummary
-    analysis_result: AgentAnalyzeResponse
+    result: AnalysisResultPayload
+
+
+class AnalyzeStartResponse(BaseModel):
+    session_id: str
+    status: Literal["processing"]

@@ -1,41 +1,41 @@
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, Form, UploadFile
 from app.modules.analyze.helper import normalize_jd_text
 
-from app.modules.analyze.schemas import AnalyzeResponse, CVParseSummary
-from app.modules.analyze.service import (
-    analyze_cv_with_agent_service,
-    parse_cv_with_document_parser,
-)
+from app.modules.analyze.schemas import AnalyzeStartResponse
+from app.modules.analyze.service import validate_cv_file_bytes
+from app.modules.session.service import run_analysis_session
+from app.modules.session.store import create_session
 
 router = APIRouter()
 
 
-@router.post("/analyze", response_model=AnalyzeResponse)
+@router.post(
+    "/analyze",
+    response_model=AnalyzeStartResponse,
+    status_code=202,
+)
 async def analyze_cv(
+    background_tasks: BackgroundTasks,
     cv_file: UploadFile = File(...),
     jd_text: str = Form(...),
 ):
     normalized_jd_text = normalize_jd_text(jd_text)
 
-    parse_result = await parse_cv_with_document_parser(cv_file)
+    file_bytes = await cv_file.read()
+    validate_cv_file_bytes(file_bytes)
 
-    analysis_result = await analyze_cv_with_agent_service(
-        cv_text=parse_result.text,
+    session = create_session()
+
+    background_tasks.add_task(
+        run_analysis_session,
+        session_id=session.session_id,
+        filename=cv_file.filename,
+        content_type=cv_file.content_type,
+        file_bytes=file_bytes,
         jd_text=normalized_jd_text,
-        parser_warnings=parse_result.warnings,
     )
 
-    return AnalyzeResponse(
-        status="completed",
-        message="CV parsed and analyzed successfully.",
-        cv_parse_result=CVParseSummary(
-            filename=parse_result.filename,
-            document_type=parse_result.document_type,
-            content_type=parse_result.content_type,
-            file_size_bytes=parse_result.file_size_bytes,
-            page_count=parse_result.page_count,
-            text_length=parse_result.text_length,
-            warnings=parse_result.warnings,
-        ),
-        analysis_result=analysis_result,
+    return AnalyzeStartResponse(
+        session_id=session.session_id,
+        status="processing",
     )

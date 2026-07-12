@@ -11,11 +11,11 @@ For implementation history, see [Changelog](../CHANGELOG.md).
 
 MVP is in development.
 
-API Gateway, Document Parser Service, and Agent Service are connected in the current synchronous backend vertical slice.
+API Gateway, Document Parser Service, and Agent Service are connected in the current session-based backend vertical slice.
 
 Agent Service foundation is implemented and can be tested independently through its health and analyze endpoints. Its current analyzer is a deterministic rule-based baseline.
 
-LangGraph orchestration, Gemini integration, embedding-based semantic matching, session tracking, and persistence are not implemented yet.
+LangGraph orchestration, Gemini integration, embedding-based semantic matching, persistent storage, and production-grade job queueing are not implemented yet.
 
 ## Completed Foundation
 
@@ -40,7 +40,7 @@ LangGraph orchestration, Gemini integration, embedding-based semantic matching, 
 * API Gateway CV file empty and size validation before calling Document Parser Service
 * API Gateway parser response schema validation
 * Safer API Gateway handling for Document Parser error responses, including non-JSON error bodies
-* Replaced parser-only analyze response with full synchronous analysis response after Agent Service integration
+* Replaced parser-only analyze response with full Agent Service analysis response after Agent Service integration
 * Document Parser missing file behavior documented as FastAPI request validation
 * Agent Service initial FastAPI structure
 * Agent Service health check endpoint
@@ -57,6 +57,10 @@ LangGraph orchestration, Gemini integration, embedding-based semantic matching, 
 * Synchronous backend end-to-end flow: API Gateway → Document Parser Service → Agent Service
 * API Gateway Agent Service response schema validation
 * API Gateway error handling for Agent Service unavailable, Agent Service error, invalid Agent response, and too-short extracted CV text
+* API Gateway in-memory session tracking for analysis jobs
+* API Gateway `GET /api/v1/session/{session_id}` polling endpoint
+* API Gateway background analysis task using Document Parser Service and Agent Service
+* API Gateway session status handling for `processing`, `completed`, and `failed`
 
 ## Not Implemented Yet
 
@@ -66,5 +70,5 @@ LangGraph orchestration, Gemini integration, embedding-based semantic matching, 
 * Embedding-based skill matching
 * Supabase integration
 * Result persistence
-* Basic session status tracking
-* Session-based asynchronous analysis flow
+* Persistent session status tracking
+* Production-grade asynchronous job queue
