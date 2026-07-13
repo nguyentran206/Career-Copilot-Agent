@@ -4,13 +4,14 @@ Tài liệu này mô tả các phase tiếp theo để đưa Career Copilot Agen
 
 ## Trạng thái hiện tại
 
-Project hiện đã có nền backend microservices:
+Project hiện đã có session-based MVP vertical slice:
 
 - `api-gateway`: nhận CV PDF và JD text, validate input, gọi Document Parser Service, sau đó gọi Agent Service để trả analysis response.
 - `document-parser-service`: validate PDF, extract raw text bằng PyMuPDF, trả metadata và warning cho PDF ít text/scanned.
 - `agent-service`: đã có deterministic rule-based analyzer baseline và được API Gateway gọi trong backend E2E flow.
+- `frontend/web`: Next.js TypeScript App Router MVP để upload CV PDF, nhập JD text, poll session và hiển thị kết quả.
 
-Frontend, session tracking, persistence, deployment production và AI workflow thật vẫn chưa hoàn thiện.
+Persistence, deployment production và AI workflow thật vẫn chưa hoàn thiện.
 
 ## Nguyên tắc triển khai các phase tiếp theo
 
@@ -37,9 +38,9 @@ Frontend, session tracking, persistence, deployment production và AI workflow t
 
 Ưu tiên gần nhất:
 
-1. Phase 04: thêm session tracking MVP nếu cần chuẩn bị cho request dài hơn.
-2. Phase 05: xây frontend MVP để demo end-to-end.
-3. Phase 06: nâng cấp scoring intelligence, bao gồm O*NET occupational prior và AI/semantic matching.
+1. Phase 06: nâng cấp scoring intelligence, bao gồm O*NET occupational prior và AI/semantic matching.
+2. Phase 07: thêm Supabase persistence và storage.
+3. Phase 08: chuẩn bị deployment, observability và production hardening.
 
 Sau khi backend E2E ổn định, có thể ưu tiên session/frontend để hoàn thiện MVP demo trước khi nâng cấp scoring intelligence sâu hơn.
 

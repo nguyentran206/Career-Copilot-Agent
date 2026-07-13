@@ -18,7 +18,7 @@ It intentionally does not duplicate detailed request/response contracts. Detaile
 ## Current Runtime Topology
 
 ```text
-Client
+Frontend
   → API Gateway
       → Document Parser Service
       → Agent Service
@@ -26,6 +26,7 @@ Client
 
 Current notes:
 
+* The Next.js frontend calls only API Gateway.
 * API Gateway currently starts an in-memory analysis session from `POST /api/v1/analyze`.
 * The analysis workflow calls Document Parser Service to extract CV text.
 * The analysis workflow then calls Agent Service to analyze extracted CV text against JD text.

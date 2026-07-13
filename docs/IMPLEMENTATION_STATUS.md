@@ -11,7 +11,7 @@ For implementation history, see [Changelog](../CHANGELOG.md).
 
 MVP is in development.
 
-API Gateway, Document Parser Service, and Agent Service are connected in the current session-based backend vertical slice.
+Frontend, API Gateway, Document Parser Service, and Agent Service are connected in the current session-based MVP vertical slice.
 
 Agent Service foundation is implemented and can be tested independently through its health and analyze endpoints. Its current analyzer is a deterministic rule-based baseline.
 
@@ -61,10 +61,16 @@ LangGraph orchestration, Gemini integration, embedding-based semantic matching, 
 * API Gateway `GET /api/v1/session/{session_id}` polling endpoint
 * API Gateway background analysis task using Document Parser Service and Agent Service
 * API Gateway session status handling for `processing`, `completed`, and `failed`
+* Next.js TypeScript App Router frontend scaffold in `frontend/web`
+* Frontend CV PDF upload and JD textarea form
+* Frontend client-side validation for required PDF and minimum JD length
+* Frontend API client that calls only API Gateway
+* Frontend analysis session polling through `GET /api/v1/session/{session_id}`
+* Frontend result rendering for fit score, fit level, matched skills, missing skills, CV suggestions, cover letter, learning roadmap, and parser warnings
+* Frontend friendly error display for validation, parser, agent, session, and analysis failures
 
 ## Not Implemented Yet
 
-* Frontend Next.js application
 * LangGraph workflow
 * Gemini integration
 * Embedding-based skill matching

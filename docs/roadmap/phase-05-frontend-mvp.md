@@ -1,5 +1,11 @@
 # Phase 05 - Frontend MVP
 
+## Trạng thái
+
+Implemented as a frontend MVP in `frontend/web`.
+
+The app uses Next.js TypeScript App Router, calls only API Gateway, starts analysis through `POST /api/v1/analyze`, polls `GET /api/v1/session/{session_id}`, and renders completed results or friendly errors.
+
 ## Mục tiêu
 
 Xây frontend Next.js tối giản để user upload CV PDF, nhập JD text và xem kết quả analysis.
