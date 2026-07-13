@@ -2,7 +2,12 @@ import httpx
 from fastapi import HTTPException, UploadFile, status
 
 from pydantic import ValidationError
-from app.modules.analyze.schemas import AgentAnalyzeResponse, DocumentParserResponse
+from app.modules.analyze.schemas import (
+    AgentAnalyzeResponse,
+    AnalysisResultPayload,
+    CVParseSummary,
+    DocumentParserResponse,
+)
 
 from app.core.config import settings
 
@@ -13,6 +18,16 @@ MIN_EXTRACTED_CV_TEXT_LENGTH = 50
 async def parse_cv_with_document_parser(cv_file: UploadFile) -> DocumentParserResponse:
     file_bytes = await cv_file.read()
 
+    return await parse_cv_bytes_with_document_parser(
+        filename=cv_file.filename,
+        content_type=cv_file.content_type,
+        file_bytes=file_bytes,
+    )
+
+
+def validate_cv_file_bytes(
+    file_bytes: bytes,
+) -> None:
     if len(file_bytes) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -31,11 +46,19 @@ async def parse_cv_with_document_parser(cv_file: UploadFile) -> DocumentParserRe
             },
         )
 
+
+async def parse_cv_bytes_with_document_parser(
+    filename: str | None,
+    content_type: str | None,
+    file_bytes: bytes,
+) -> DocumentParserResponse:
+    validate_cv_file_bytes(file_bytes)
+
     files = {
         "file": (
-            cv_file.filename,
+            filename,
             file_bytes,
-            cv_file.content_type or "application/pdf",
+            content_type or "application/pdf",
         )
     }
 
@@ -152,3 +175,35 @@ async def analyze_cv_with_agent_service(
                 "message": "Agent Service returned an invalid response.",
             },
         ) from exc
+
+
+async def run_analysis(
+    filename: str | None,
+    content_type: str | None,
+    file_bytes: bytes,
+    jd_text: str,
+) -> AnalysisResultPayload:
+    parse_result = await parse_cv_bytes_with_document_parser(
+        filename=filename,
+        content_type=content_type,
+        file_bytes=file_bytes,
+    )
+
+    analysis_result = await analyze_cv_with_agent_service(
+        cv_text=parse_result.text,
+        jd_text=jd_text,
+        parser_warnings=parse_result.warnings,
+    )
+
+    return AnalysisResultPayload(
+        cv_parse_result=CVParseSummary(
+            filename=parse_result.filename,
+            document_type=parse_result.document_type,
+            content_type=parse_result.content_type,
+            file_size_bytes=parse_result.file_size_bytes,
+            page_count=parse_result.page_count,
+            text_length=parse_result.text_length,
+            warnings=parse_result.warnings,
+        ),
+        analysis_result=analysis_result,
+    )

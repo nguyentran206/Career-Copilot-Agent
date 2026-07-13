@@ -17,7 +17,8 @@ This README explains how to run and configure API Gateway locally.
 | Method | Endpoint         | Description                         |
 | ------ | ---------------- | ----------------------------------- |
 | GET    | `/api/v1/health` | Check if the API Gateway is running |
-| POST | `/api/v1/analyze` | Parse uploaded CV through Document Parser Service, analyze it through Agent Service, and return analysis response |
+| POST | `/api/v1/analyze` | Start a CV/JD analysis session |
+| GET | `/api/v1/session/{session_id}` | Get analysis session status and result |
 
 ## API Contract
 
@@ -53,12 +54,12 @@ Current behavior:
 ```text
 API Gateway receives CV PDF and JD text
 → validates the basic request
-→ sends the CV PDF to Document Parser Service
-→ sends extracted CV text and normalized JD text to Agent Service
-→ returns a completed analysis response
+→ creates an in-memory analysis session
+→ returns session_id with status processing
+→ runs Document Parser Service and Agent Service in a background task
 ```
 
-This is currently a synchronous backend flow. Session-based processing will be added in a later phase.
+This is currently a session-based MVP flow backed by an in-memory session store.
 
 Request content type:
 
@@ -75,58 +76,121 @@ Request fields:
 
 Successful response:
 
+Status code:
+
+```text
+202 Accepted
+```
+
 ```json
 {
-  "status": "completed",
-  "message": "CV parsed and analyzed successfully.",
-  "cv_parse_result": {
-    "filename": "cv.pdf",
-    "document_type": "cv",
-    "content_type": "application/pdf",
-    "file_size_bytes": 245321,
-    "page_count": 2,
-    "text_length": 5421,
-    "warnings": []
-  },
-  "analysis_result": {
-    "fit_score": 78,
-    "fit_level": "medium",
-    "score_breakdown": {
-      "required_skill_score": 78,
-      "preferred_skill_score": 0,
-      "experience_relevance_score": 0,
-      "project_domain_relevance_score": 0,
-      "education_cert_tool_score": 0
-    },
-    "parsed_cv": {},
-    "parsed_jd": {},
-    "skill_matches": [],
-    "matched_skills": ["Python", "FastAPI"],
-    "missing_skills": ["Docker"],
-    "cv_improvement_suggestions": [],
-    "cover_letter": "Cover letter generation will be implemented in a later phase.",
-    "learning_roadmap": null
-  }
+  "session_id": "string",
+  "status": "processing"
 }
 ```
 
-Error responses:
+Immediate validation error responses:
 
 | Status Code | Error Code | Description |
 |---|---|---|
 | 400 | `JD_TEXT_REQUIRED` | Job Description text is blank after normalization. |
 | 400 | `JD_TEXT_TOO_SHORT` | Job Description text is shorter than the minimum allowed length. |
 | 400 | `EMPTY_CV_FILE` | Uploaded CV file is empty. |
-| 400 | `CV_TEXT_TOO_SHORT` | Extracted CV text is too short for analysis, usually because the PDF is scanned or image-based. |
 | 413 | `JD_TEXT_TOO_LONG` | Job Description text exceeds the maximum allowed length. |
 | 413 | `CV_FILE_TOO_LARGE` | Uploaded CV file exceeds the API Gateway size limit. |
 | 422 | FastAPI validation error | Required multipart field `cv_file` or `jd_text` is missing. |
-| 503 | `DOCUMENT_PARSER_UNAVAILABLE` | API Gateway cannot reach Document Parser Service. |
-| 503 | `AGENT_SERVICE_UNAVAILABLE` | API Gateway cannot reach Agent Service. |
-| 502 | `DOCUMENT_PARSER_INVALID_RESPONSE` | Document Parser Service returned an invalid success response. |
-| 502 | `AGENT_SERVICE_INVALID_RESPONSE` | Agent Service returned an invalid success response. |
-| Upstream status | `DOCUMENT_PARSER_ERROR` | Document Parser Service returned an error while parsing the CV. |
-| Upstream status | `AGENT_SERVICE_ERROR` | Agent Service returned an error while analyzing the CV and JD. |
+
+Parser and Agent errors are stored in the session as `failed` results because they happen inside the background analysis task.
+
+### Get Analysis Session
+
+```http
+GET /api/v1/session/{session_id}
+```
+
+Processing response:
+
+```json
+{
+  "session_id": "string",
+  "status": "processing",
+  "result": null,
+  "error": null
+}
+```
+
+Completed response:
+
+```json
+{
+  "session_id": "string",
+  "status": "completed",
+  "result": {
+    "cv_parse_result": {
+      "filename": "cv.pdf",
+      "document_type": "cv",
+      "content_type": "application/pdf",
+      "file_size_bytes": 245321,
+      "page_count": 2,
+      "text_length": 5421,
+      "warnings": []
+    },
+    "analysis_result": {
+      "fit_score": 78,
+      "fit_level": "medium",
+      "score_breakdown": {
+        "required_skill_score": 78,
+        "preferred_skill_score": 0,
+        "experience_relevance_score": 0,
+        "project_domain_relevance_score": 0,
+        "education_cert_tool_score": 0
+      },
+      "parsed_cv": {},
+      "parsed_jd": {},
+      "skill_matches": [],
+      "matched_skills": ["Python", "FastAPI"],
+      "missing_skills": ["Docker"],
+      "cv_improvement_suggestions": [],
+      "cover_letter": "Cover letter generation will be implemented in a later phase.",
+      "learning_roadmap": null
+    }
+  },
+  "error": null
+}
+```
+
+Failed response:
+
+```json
+{
+  "session_id": "string",
+  "status": "failed",
+  "result": null,
+  "error": {
+    "code": "AGENT_SERVICE_UNAVAILABLE",
+    "message": "Agent Service is unavailable.",
+    "detail": null
+  }
+}
+```
+
+Session error responses:
+
+| Status Code | Error Code | Description |
+|---|---|---|
+| 404 | `SESSION_NOT_FOUND` | Analysis session does not exist in the in-memory store. |
+
+Background failure codes may include:
+
+| Error Code | Description |
+|---|---|
+| `DOCUMENT_PARSER_UNAVAILABLE` | API Gateway cannot reach Document Parser Service. |
+| `DOCUMENT_PARSER_ERROR` | Document Parser Service returned an error while parsing the CV. |
+| `DOCUMENT_PARSER_INVALID_RESPONSE` | Document Parser Service returned an invalid success response. |
+| `CV_TEXT_TOO_SHORT` | Extracted CV text is too short for analysis, usually because the PDF is scanned or image-based. |
+| `AGENT_SERVICE_UNAVAILABLE` | API Gateway cannot reach Agent Service. |
+| `AGENT_SERVICE_ERROR` | Agent Service returned an error while analyzing the CV and JD. |
+| `AGENT_SERVICE_INVALID_RESPONSE` | Agent Service returned an invalid success response. |
 
 ## Environment Variables
 
@@ -217,9 +281,10 @@ http://127.0.0.1:8000/docs
 The API Gateway currently provides:
 
 * Health check endpoint
-* Analyze endpoint that calls Document Parser Service and Agent Service
+* Analyze endpoint that starts an in-memory analysis session
+* Session polling endpoint
 
-Session-based processing is not implemented yet.
+Session persistence is not implemented yet. Sessions are stored in memory and are lost when API Gateway restarts.
 
 ## Related Documentation
 

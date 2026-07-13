@@ -26,8 +26,9 @@ Client
 
 Current notes:
 
-* API Gateway currently calls Document Parser Service to extract CV text.
-* API Gateway then calls Agent Service to analyze extracted CV text against JD text.
+* API Gateway currently starts an in-memory analysis session from `POST /api/v1/analyze`.
+* The analysis workflow calls Document Parser Service to extract CV text.
+* The analysis workflow then calls Agent Service to analyze extracted CV text against JD text.
 * Agent Service also exposes its own deterministic analysis endpoint for direct local testing.
 
 ## Target MVP Topology
@@ -53,8 +54,8 @@ Agent Service/API Gateway
 | Service | Exposure | Method | Endpoint | Status | Detailed docs |
 |---|---|---|---|---|---|
 | API Gateway | Public | GET | `/api/v1/health` | Implemented | [API Gateway README](../backend/api-gateway/README.md) |
-| API Gateway | Public | POST | `/api/v1/analyze` | Implemented synchronous parser + agent analysis response | [API Gateway README](../backend/api-gateway/README.md) |
-| API Gateway | Public | GET | `/api/v1/session/{session_id}` | Planned | [API Gateway README](../backend/api-gateway/README.md) |
+| API Gateway | Public | POST | `/api/v1/analyze` | Implemented session start response | [API Gateway README](../backend/api-gateway/README.md) |
+| API Gateway | Public | GET | `/api/v1/session/{session_id}` | Implemented in-memory session polling | [API Gateway README](../backend/api-gateway/README.md) |
 | Document Parser Service | Internal | GET | `/api/v1/health` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
 | Document Parser Service | Internal | POST | `/api/v1/parse-document` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
 | Agent Service | Internal/direct local | GET | `/api/v1/health` | Implemented | [Agent Service README](../backend/agent-service/README.md) |
@@ -62,6 +63,7 @@ Agent Service/API Gateway
 
 ## Status Notes
 
-* `POST /api/v1/analyze` in API Gateway currently returns a synchronous analysis response with status `completed`.
+* `POST /api/v1/analyze` in API Gateway currently returns `session_id` with status `processing`.
+* `GET /api/v1/session/{session_id}` returns `processing`, `completed`, or `failed`.
+* Session storage is currently in-memory and is lost when API Gateway restarts.
 * Agent Service currently uses a deterministic rule-based analysis baseline and can still be tested directly.
-* Session-based processing is planned for a later phase.
