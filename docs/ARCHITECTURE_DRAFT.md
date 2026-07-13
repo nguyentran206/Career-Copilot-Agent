@@ -19,13 +19,20 @@ For detailed implementation progress, see [Implementation Status](IMPLEMENTATION
 ## Current Local Architecture
 
 ```text
-Client
+Frontend
   → API Gateway
       → In-memory session store
       → Background analysis task
           → Document Parser Service
           → Agent Service
 ```
+
+Current local frontend:
+
+* Next.js TypeScript App Router app in `frontend/web`
+* Default local URL: `http://localhost:3000`
+* Calls only API Gateway at `NEXT_PUBLIC_API_BASE_URL`
+
 Agent Service can also be tested directly during local development.
 
 ---
@@ -89,7 +96,8 @@ For implementation and local development, see [Agent Service README](../backend/
 ## Current Implemented Flow
 
 ```text
-Client sends CV PDF and JD text to API Gateway
+User uploads CV PDF and enters JD text in the frontend
+→ Frontend sends CV PDF and JD text to API Gateway
 → API Gateway validates the request
 → API Gateway creates an in-memory analysis session
 → API Gateway returns session_id with status processing
@@ -98,7 +106,8 @@ Client sends CV PDF and JD text to API Gateway
 → Background task sends extracted CV text and normalized JD text to Agent Service
 → Agent Service returns deterministic analysis result
 → API Gateway stores completed result or failed error in the session store
-→ Client polls GET /api/v1/session/{session_id}
+→ Frontend polls GET /api/v1/session/{session_id}
+→ Frontend renders result or friendly error
 ```
 
 Session tracking is implemented with an in-memory store for MVP. Sessions are lost when API Gateway restarts.

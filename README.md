@@ -21,11 +21,12 @@ For detailed MVP scope, input/output, and conditional outcomes, see [MVP Scope](
 
 ## Tech Stack
 
-Current backend foundation:
+Current MVP foundation:
 
 * FastAPI microservices
 * PDF text extraction
 * Deterministic rule-based analysis baseline
+* Next.js frontend MVP
 
 Planned AI and infrastructure components:
 
@@ -33,7 +34,6 @@ Planned AI and infrastructure components:
 * Gemini
 * Embedding-based semantic matching
 * Supabase
-* Next.js
 * AWS and Vercel
 
 For detailed implementation progress, see [Implementation Status](docs/IMPLEMENTATION_STATUS.md).
@@ -46,7 +46,15 @@ The backend is organized as FastAPI microservices:
 * `backend/document-parser-service`: internal service for extracting text from uploaded PDF documents.
 * `backend/agent-service`: internal service that currently exposes a deterministic rule-based CV/JD analysis baseline. LangGraph, Gemini, and embedding-based matching are planned for later phases.
 
-API Gateway currently coordinates the backend synchronous flow by calling Document Parser Service first, then Agent Service.
+API Gateway currently coordinates the backend analysis flow by creating an in-memory session, calling Document Parser Service first, then Agent Service.
+
+## Frontend
+
+The frontend MVP is located at:
+
+* [Career Copilot Web](frontend/web/README.md)
+
+It is a Next.js TypeScript App Router application that calls only API Gateway.
 
 For detailed implementation progress, see [Implementation Status](docs/IMPLEMENTATION_STATUS.md).
 
@@ -71,3 +79,10 @@ For installation, environment configuration, testing, and run commands, see:
 * [API Gateway README](backend/api-gateway/README.md)
 * [Document Parser Service README](backend/document-parser-service/README.md)
 * [Agent Service README](backend/agent-service/README.md)
+
+Run the frontend separately from `frontend/web` after installing Node dependencies:
+
+```text
+npm install
+npm run dev
+```
