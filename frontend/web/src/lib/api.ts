@@ -10,11 +10,16 @@ const API_BASE_URL = (
 
 export async function startAnalysis(
   cvFile: File,
-  jdText: string
+  jdText: string | null,
+  jdFile: File | null
 ): Promise<AnalyzeStartResponse> {
   const formData = new FormData();
   formData.append("cv_file", cvFile);
-  formData.append("jd_text", jdText);
+  if (jdFile) {
+    formData.append("jd_file", jdFile);
+  } else if (jdText) {
+    formData.append("jd_text", jdText);
+  }
 
   const response = await fetch(`${API_BASE_URL}/api/v1/analyze`, {
     method: "POST",

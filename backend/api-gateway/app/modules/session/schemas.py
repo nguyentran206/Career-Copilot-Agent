@@ -22,6 +22,7 @@ class AnalysisSession(BaseModel):
     error: SessionError | None = None
     created_at: datetime
     updated_at: datetime
+    expires_at: datetime
 
 
 class SessionResponse(BaseModel):
@@ -29,4 +30,5 @@ class SessionResponse(BaseModel):
     status: SessionStatus
     result: AnalysisResultPayload | None = None
     error: SessionError | None = None
+    expires_at: datetime
 

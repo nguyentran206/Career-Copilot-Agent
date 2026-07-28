@@ -14,7 +14,7 @@ def test_health_check():
 
     assert data == {
         "status": "ok",
-        "service": "Career Copilot API Gateway",
+        "service": "Career Copilot - API Gateway",
         "version": "0.1.0",
         "environment": "development",
     }

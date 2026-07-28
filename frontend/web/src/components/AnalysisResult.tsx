@@ -34,7 +34,11 @@ function TextList({
 }
 
 export function AnalysisResult({ result }: AnalysisResultProps) {
-  const { cv_parse_result: parseResult, analysis_result: analysis } = result;
+  const { analysis_result: analysis } = result;
+  const parserWarnings = [
+    ...result.cv_parse_result.warnings,
+    ...(result.jd_parse_result?.warnings ?? [])
+  ];
 
   return (
     <div className="result">
@@ -46,20 +50,39 @@ export function AnalysisResult({ result }: AnalysisResultProps) {
           </span>
           <h2>Analysis completed</h2>
           <p className="hint">
-            Parsed {parseResult.page_count} page(s), extracted{" "}
-            {parseResult.text_length.toLocaleString()} characters from{" "}
-            {parseResult.filename}.
+            This fit score is decision support based on the submitted CV and JD, not a hiring decision or guarantee.
           </p>
         </div>
       </section>
 
-      {parseResult.warnings.length > 0 ? (
+      {parserWarnings.length > 0 ? (
         <section className="card section-card">
-          <h3>Parser warnings</h3>
+          <h3>Document warnings</h3>
           <TextList
             className="warning-list"
-            items={parseResult.warnings}
-            emptyText="No parser warnings."
+            items={parserWarnings}
+            emptyText="No document warnings."
+          />
+        </section>
+      ) : null}
+
+      {analysis.analysis_warnings.length > 0 ? (
+        <section className="card section-card">
+          <h3>Analysis warnings</h3>
+          <TextList
+            className="warning-list"
+            items={analysis.analysis_warnings}
+            emptyText="No analysis warnings."
+          />
+        </section>
+      ) : null}
+
+      {analysis.score_adjustments.length > 0 ? (
+        <section className="card section-card">
+          <h3>Score guardrails</h3>
+          <TextList
+            items={analysis.score_adjustments.map((item) => item.reason)}
+            emptyText="No score guardrails were applied."
           />
         </section>
       ) : null}

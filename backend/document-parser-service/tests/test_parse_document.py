@@ -69,3 +69,18 @@ def test_parse_document_with_valid_pdf():
     assert "text" in data
     assert "text_length" in data
     assert "warnings" in data
+
+
+def test_parse_document_preserves_jd_document_type():
+    pdf_path = Path(__file__).parent / "fixtures" / "sample_cv1.pdf"
+
+    with pdf_path.open("rb") as pdf_file:
+        response = client.post(
+            "/api/v1/parse-document",
+            files={"file": ("sample_jd.pdf", pdf_file, "application/pdf")},
+            data={"document_type": "jd"},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["document_type"] == "jd"
+    assert response.json()["text_length"] >= 50

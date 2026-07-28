@@ -116,11 +116,46 @@ button:disabled {
   font-weight: 700;
 }
 
+.input-mode {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.input-mode legend {
+  width: 100%;
+  margin-bottom: 9px;
+  font-weight: 700;
+}
+
+.input-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  padding: 9px 13px;
+  font-size: 0.92rem;
+}
+
 .hint {
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.5;
+}
+
+.privacy-note {
+  margin: 14px 0 20px;
+  border-left: 3px solid var(--primary);
+  background: rgb(219 234 254 / 0.55);
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .file-input,
@@ -164,6 +199,26 @@ button:disabled {
 .primary-button:hover:not(:disabled) {
   background: var(--primary-dark);
   transform: translateY(-1px);
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text);
+  padding: 12px 18px;
+  font-weight: 750;
+}
+
+.secondary-button:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.error-actions {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
 }
 
 .status-card {

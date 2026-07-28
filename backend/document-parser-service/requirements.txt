@@ -1,7 +1,5 @@
-fastapi
-uvicorn[standard]
-python-multipart
-pydantic-settings
-PyMuPDF
-pytest
-httpx
+fastapi==0.139.0
+uvicorn[standard]==0.49.0
+python-multipart==0.0.32
+pydantic-settings==2.14.2
+PyMuPDF==1.28.0

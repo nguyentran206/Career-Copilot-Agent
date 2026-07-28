@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.v1.routes import api_router
 from app.core.config import settings
+from app.core.request_context import setup_request_context
 
 
 def create_app() -> FastAPI:
@@ -9,6 +10,7 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         version=settings.app_version,
     )
+    setup_request_context(app)
 
     app.include_router(
         api_router,

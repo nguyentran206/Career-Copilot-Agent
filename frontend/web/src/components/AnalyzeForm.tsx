@@ -13,24 +13,43 @@ import { ErrorMessage } from "./ErrorMessage";
 import { StatusCard } from "./StatusCard";
 
 const MIN_JD_LENGTH = 50;
-const MAX_POLL_ATTEMPTS = 120;
 const POLL_INTERVAL_MS = 1500;
+const SESSION_TIMEOUT_MS = 240_000;
+const MAX_POLL_ATTEMPTS = Math.ceil(
+  SESSION_TIMEOUT_MS / POLL_INTERVAL_MS
+);
+type JdInputMode = "text" | "pdf";
 
 function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-function validateInput(cvFile: File | null, jdText: string) {
+function isPdf(file: File) {
+  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+}
+
+function validateInput(
+  cvFile: File | null,
+  jdMode: JdInputMode,
+  jdText: string,
+  jdFile: File | null
+) {
   if (!cvFile) {
     throw new AppApiError("CV_REQUIRED", "Please upload a CV PDF.");
   }
 
-  const isPdf =
-    cvFile.type === "application/pdf" ||
-    cvFile.name.toLowerCase().endsWith(".pdf");
+  if (!isPdf(cvFile)) {
+    throw new AppApiError("CV_FILE_NOT_PDF", "Please upload a PDF file.");
+  }
 
-  if (!isPdf) {
-    throw new AppApiError("CV_NOT_PDF", "Please upload a PDF file.");
+  if (jdMode === "pdf") {
+    if (!jdFile) {
+      throw new AppApiError("JD_INPUT_REQUIRED", "Please upload a JD PDF.");
+    }
+    if (!isPdf(jdFile)) {
+      throw new AppApiError("JD_FILE_NOT_PDF", "Please upload a JD PDF.");
+    }
+    return;
   }
 
   if (jdText.trim().length < MIN_JD_LENGTH) {
@@ -43,11 +62,13 @@ function validateInput(cvFile: File | null, jdText: string) {
 
 export function AnalyzeForm() {
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [jdMode, setJdMode] = useState<JdInputMode>("text");
   const [jdText, setJdText] = useState("");
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [jdFile, setJdFile] = useState<File | null>(null);
   const [result, setResult] = useState<CompletedAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   async function pollUntilFinished(nextSessionId: string) {
     for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt += 1) {
@@ -75,19 +96,19 @@ export function AnalyzeForm() {
     );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  async function runCurrentAnalysis() {
     setError(null);
     setResult(null);
-    setSessionId(null);
 
     try {
-      validateInput(cvFile, jdText);
+      validateInput(cvFile, jdMode, jdText, jdFile);
       setIsSubmitting(true);
 
-      const started = await startAnalysis(cvFile as File, jdText.trim());
-      setSessionId(started.session_id);
+      const started = await startAnalysis(
+        cvFile as File,
+        jdMode === "text" ? jdText.trim() : null,
+        jdMode === "pdf" ? jdFile : null
+      );
 
       await pollUntilFinished(started.session_id);
     } catch (caughtError) {
@@ -95,6 +116,21 @@ export function AnalyzeForm() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await runCurrentAnalysis();
+  }
+
+  function clearAnalysis() {
+    setCvFile(null);
+    setJdMode("text");
+    setJdText("");
+    setJdFile(null);
+    setResult(null);
+    setError(null);
+    setFileInputKey((value) => value + 1);
   }
 
   return (
@@ -105,12 +141,19 @@ export function AnalyzeForm() {
           Frontend sends the request only to API Gateway. Document Parser and
           Agent Service stay internal behind the backend flow.
         </p>
+        <p className="privacy-note">
+          Privacy: your CV and JD are processed only to produce this result. The
+          Gateway keeps the temporary session in memory for about 30 minutes;
+          it is not saved to an account or application database and can disappear
+          sooner if the backend restarts.
+        </p>
 
         <form className="form" onSubmit={handleSubmit}>
           <div className="field">
             <label htmlFor="cv_file">CV PDF</label>
             <input
               id="cv_file"
+              key={fileInputKey}
               className="file-input"
               type="file"
               accept="application/pdf,.pdf"
@@ -123,19 +166,64 @@ export function AnalyzeForm() {
           </div>
 
           <div className="field">
-            <label htmlFor="jd_text">Job Description</label>
-            <textarea
-              id="jd_text"
-              className="textarea"
-              value={jdText}
-              onChange={(event) => setJdText(event.target.value)}
-              placeholder="Paste the full Job Description here..."
-              disabled={isSubmitting}
-            />
-            <p className="hint">
-              Minimum {MIN_JD_LENGTH} characters. JD remains the primary source
-              of truth for analysis.
-            </p>
+            <fieldset className="input-mode">
+              <legend>Job Description</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="jd_mode"
+                  value="text"
+                  checked={jdMode === "text"}
+                  onChange={() => {
+                    setJdMode("text");
+                    setJdFile(null);
+                  }}
+                  disabled={isSubmitting}
+                />
+                Paste text
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="jd_mode"
+                  value="pdf"
+                  checked={jdMode === "pdf"}
+                  onChange={() => {
+                    setJdMode("pdf");
+                    setJdText("");
+                  }}
+                  disabled={isSubmitting}
+                />
+                Upload PDF
+              </label>
+            </fieldset>
+
+            {jdMode === "text" ? (
+              <>
+                <textarea
+                  id="jd_text"
+                  className="textarea"
+                  value={jdText}
+                  onChange={(event) => setJdText(event.target.value)}
+                  placeholder="Paste the full Job Description here..."
+                  disabled={isSubmitting}
+                />
+                <p className="hint">Minimum {MIN_JD_LENGTH} characters.</p>
+              </>
+            ) : (
+              <>
+                <input
+                  id="jd_file"
+                  key={`jd-${fileInputKey}`}
+                  className="file-input"
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  onChange={(event) => setJdFile(event.target.files?.item(0) ?? null)}
+                  disabled={isSubmitting}
+                />
+                <p className="hint">Use a text-based JD PDF for best results.</p>
+              </>
+            )}
           </div>
 
           <button
@@ -145,20 +233,31 @@ export function AnalyzeForm() {
           >
             {isSubmitting ? "Analyzing..." : "Analyze CV"}
           </button>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={clearAnalysis}
+            disabled={isSubmitting || (!cvFile && !jdText && !jdFile && !result && !error)}
+          >
+            Clear
+          </button>
         </form>
       </section>
 
       <section>
-        {error ? <ErrorMessage message={error} /> : null}
+        {error ? (
+          <div className="error-actions">
+            <ErrorMessage message={error} />
+            <button className="secondary-button" type="button" onClick={runCurrentAnalysis}>
+              Retry analysis
+            </button>
+          </div>
+        ) : null}
 
         {isSubmitting ? (
           <StatusCard
             title="Analysis is running"
-            description={
-              sessionId
-                ? `Session ${sessionId} is processing. The UI is polling the API Gateway.`
-                : "Starting an analysis session through the API Gateway."
-            }
+            description="We are reading your documents and comparing the CV with the Job Description."
             showSpinner
           />
         ) : null}
@@ -166,7 +265,7 @@ export function AnalyzeForm() {
         {!isSubmitting && !error && !result ? (
           <StatusCard
             title="Ready when you are"
-            description="Upload a CV PDF and paste a JD to run the first frontend-to-backend MVP flow."
+            description="Upload a CV PDF, then paste a Job Description or upload a JD PDF."
           />
         ) : null}
 

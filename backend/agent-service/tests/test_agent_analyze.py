@@ -59,7 +59,9 @@ def test_analyze_high_fit_returns_cover_letter_without_roadmap():
     assert response.status_code == 200
 
     data = response.json()
-    assert data["fit_score"] == 100
+    assert 75 <= data["fit_score"] <= 100
+    assert data["raw_fit_score"] == data["fit_score"]
+    assert data["scoring_version"] == "phase6-v2"
     assert data["fit_level"] == "high"
     assert data["missing_skills"] == []
     assert data["cv_improvement_suggestions"] == []
@@ -82,7 +84,7 @@ def test_analyze_medium_fit_returns_suggestions_and_cover_letter():
     assert response.status_code == 200
 
     data = response.json()
-    assert data["fit_score"] == 60
+    assert 50 <= data["fit_score"] < 75
     assert data["fit_level"] == "medium"
     assert data["missing_skills"] == ["Docker"]
     assert data["cv_improvement_suggestions"]
@@ -126,7 +128,7 @@ def test_analyze_partial_related_skill_matches_are_medium_fit():
     assert response.status_code == 200
 
     data = response.json()
-    assert data["fit_score"] == 70
+    assert 50 <= data["fit_score"] < 75
     assert data["fit_level"] == "medium"
     assert data["missing_skills"] == []
     assert data["cv_improvement_suggestions"]

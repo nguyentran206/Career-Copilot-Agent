@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from app.modules.session.schemas import SessionResponse
 from app.modules.session.store import get_session
@@ -8,7 +8,8 @@ router = APIRouter()
 
 
 @router.get("/session/{session_id}", response_model=SessionResponse)
-def get_analysis_session(session_id: str) -> SessionResponse:
+def get_analysis_session(session_id: str, response: Response) -> SessionResponse:
+    response.headers["Cache-Control"] = "no-store, max-age=0"
     session = get_session(session_id)
 
     if session is None:
@@ -25,4 +26,5 @@ def get_analysis_session(session_id: str) -> SessionResponse:
         status=session.status,
         result=session.result,
         error=session.error,
+        expires_at=session.expires_at,
     )
