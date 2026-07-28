@@ -1,0 +1,74 @@
+services:
+  api-gateway:
+    build: ./backend/api-gateway
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      DOCUMENT_PARSER_SERVICE_URL: http://document-parser-service:8001
+      AGENT_SERVICE_URL: http://agent-service:8002
+      DOCUMENT_PARSER_TIMEOUT_SECONDS: 30
+      AGENT_SERVICE_TIMEOUT_SECONDS: 150
+      MAX_CV_FILE_SIZE_MB: 5
+      MAX_JD_FILE_SIZE_MB: 5
+      SESSION_TTL_MINUTES: 30
+      MAX_SESSIONS: 500
+      ANALYZE_RATE_LIMIT_REQUESTS: 10
+      ANALYZE_RATE_LIMIT_WINDOW_SECONDS: 60
+      MAX_CONCURRENT_ANALYSES: 3
+    ports:
+      - "8000:8000"
+    depends_on:
+      document-parser-service:
+        condition: service_healthy
+      agent-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [backend-private]
+
+  document-parser-service:
+    build: ./backend/document-parser-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8001
+      MAX_FILE_SIZE_MB: 5
+      ENABLE_OCR: "false"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/api/v1/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [backend-private]
+
+  agent-service:
+    build: ./backend/agent-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8002
+      GEMINI_ENABLED: ${GEMINI_ENABLED:-false}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-gemini-3-flash-preview}
+      GEMINI_EMBEDDING_ENABLED: ${GEMINI_EMBEDDING_ENABLED:-false}
+      GEMINI_EMBEDDING_MODEL: ${GEMINI_EMBEDDING_MODEL:-gemini-embedding-001}
+      SCORING_VERSION: phase6-v2
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/api/v1/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [backend-private]
+
+networks:
+  backend-private:
+    driver: bridge
