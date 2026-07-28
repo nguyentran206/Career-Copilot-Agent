@@ -1,239 +1,48 @@
 # Agent Service
 
-Internal FastAPI service responsible for analyzing extracted CV text against Job Description text.
+Private FastAPI/LangGraph service that analyzes extracted CV text against a JD. It has no database and does not retain request content.
 
-## Responsibilities
+## Workflow
 
-- Receive `cv_text` and `jd_text` from API Gateway in the target MVP flow
-- Support direct local testing through its own `/api/v1/analyze` endpoint in the current implementation
-- Parse CV text into structured information
-- Parse JD text into structured requirements
-- Match CV skills against JD requirements
-- Calculate fit score and fit level
-- Return matched skills, missing skills, suggestions, and conditional output
+CV and JD parsing run in parallel. Gemini structured parsing is optional; deterministic parsing is the fallback. Matching uses exact aliases/taxonomy plus optional batched Gemini embeddings. Only the selected cover-letter or roadmap branch is generated. Multilingual source input is normalized into canonical English matching fields when Gemini is available; otherwise the workflow lowers confidence and marks uncertain JD priorities as unknown.
 
-## Current Status
+The JD is the only source of scored job requirements. No occupational dataset or inferred occupation requirement is used.
 
-This service currently provides foundation endpoints and deterministic rule-based scoring.
+## `phase6-v2` score
 
-The Phase 2 deterministic baseline focuses on known skill extraction, related-skill matching, required-skill scoring, fit-level evaluation, and conditional output placeholders.
-LangGraph, Gemini integration, embedding-based matching, and O*NET-based weighting are planned for later phases.
+Each JD skill has a fixed classification weight:
 
-## Current Endpoints
+- required: `1.00`
+- preferred: `0.65`
+- unknown: `0.45`
 
-| Method | Endpoint                 | Description                             |
-| ------ | ------------------------ | --------------------------------------- |
-| GET    | `/api/v1/health`         | Check service health                    |
-| POST   | `/api/v1/analyze`        | Analyze CV text against JD text using the current deterministic baseline |
-
-## API Contract
-
-This README is the canonical detailed API contract for Agent Service.
-
-For the system-wide endpoint registry, see [API Draft](../../docs/API_DRAFT.md).
-
-### Health Check
-
-```http
-GET /api/v1/health
-```
-
-Successful response:
-
-```json
-{
-  "status": "ok",
-  "service": "agent-service",
-  "version": "0.1.0"
-}
-```
-
-### Analyze CV Against Job Description
-
-```http
-POST /api/v1/analyze
-```
-
-Current behavior:
+Skill coverage is the weighted mean of CV evidence scores. The raw fit score dynamically normalizes only enabled components:
 
 ```text
-Agent Service receives extracted CV text and JD text
-→ parses known skills using deterministic rules
-→ matches required JD skills against CV skills
-→ calculates a rule-based fit score and fit level
-→ returns matched skills, missing skills, suggestions, and conditional output placeholders
+skill_coverage_score             65%
+experience_relevance_score       20%
+project_relevance_score          10%
+education_cert_relevance_score    5%
 ```
 
-LangGraph orchestration, Gemini integration, embedding-based semantic matching, and O*NET-based weighting are not implemented yet.
+Required-skill guardrails prevent a high/medium result when required evidence is insufficient; a missing critical required skill also caps the result. Thresholds are high `>=75`, medium `>=50`, low `<50`. `score_confidence` describes analysis confidence and is separate from fit. The score is decision support, not a hiring decision.
 
-### Deterministic Baseline Rules
-
-Skill extraction currently uses a curated rule-based catalog with aliases for common backend, data, and AI skills.
-
-Matching rules:
-
-| Match Level | Similarity | Description |
-|---|---:|---|
-| `strong` | `1.0` | Exact canonical skill match after alias normalization. |
-| `partial` | `0.7` | Related deterministic match, for example `PostgreSQL` ↔ `SQL` or `REST API` ↔ `FastAPI`. |
-| `missing` | `0.0` | Required JD skill was not found in the CV skill set. |
-
-Current fit score baseline:
-
-```text
-fit_score = required_skill_score
-```
-
-`preferred_skill_score`, `experience_relevance_score`, `project_domain_relevance_score`, and `education_cert_tool_score` are kept in the response as placeholder fields with value `0.0`. They will be implemented in later phases.
-
-Fit level thresholds:
-
-| Fit Level | Rule |
-|---|---|
-| `high` | `fit_score >= 75` |
-| `medium` | `50 <= fit_score < 75` |
-| `low` | `fit_score < 50` |
-
-Additional downgrade rules:
-
-* If two or more required skills are missing, `high` is downgraded to `medium`.
-* If four or more required skills are missing, the result is `low`.
-
-Request content type:
-
-```text
-application/json
-```
-
-Request body:
-
-```json
-{
-  "cv_text": "Extracted CV text with at least 50 non-whitespace characters.",
-  "jd_text": "Job Description text with at least 50 non-whitespace characters."
-}
-```
-
-Validation rules:
-
-| Field | Rule |
-|---|---|
-| `cv_text` | Required, normalized whitespace, at least 50 non-whitespace characters |
-| `jd_text` | Required, normalized whitespace, at least 50 non-whitespace characters |
-
-Successful response:
-
-```json
-{
-  "fit_score": 0,
-  "fit_level": "low",
-  "score_breakdown": {
-    "required_skill_score": 0,
-    "preferred_skill_score": 0,
-    "experience_relevance_score": 0,
-    "project_domain_relevance_score": 0,
-    "education_cert_tool_score": 0
-  },
-  "parsed_cv": {
-    "skills": [],
-    "experience_summary": null,
-    "projects": [],
-    "education": [],
-    "certifications": []
-  },
-  "parsed_jd": {
-    "required_skills": [],
-    "preferred_skills": [],
-    "responsibilities": [],
-    "domain_keywords": []
-  },
-  "skill_matches": [],
-  "matched_skills": [],
-  "missing_skills": [],
-  "cv_improvement_suggestions": [],
-  "cover_letter": null,
-  "learning_roadmap": []
-}
-```
-
-Conditional output rules:
-
-| Fit Level | `cv_improvement_suggestions` | `cover_letter` | `learning_roadmap` |
-|---|---|---|---|
-| `high` | array | string placeholder | null |
-| `medium` | array | string placeholder | null |
-| `low` | array | null | array |
-
-Error responses:
-
-| Status Code | Description |
-|---|---|
-| 422 | Request body is missing required fields or text fields are shorter than the minimum length. |
-
-## Local Development
-
-### 1. Navigate to Agent Service
-
-```bash
-cd backend/agent-service
-```
-
-### 2. Create virtual environment
+## Local development
 
 ```bash
 python -m venv .venv
-```
-
-### 3. Activate virtual environment
-
-Windows PowerShell:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-macOS/Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-### 4. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 5. Configure environment variables
-
-Create a local `.env` file from `.env.example`:
-
-```bash
-cp .env.example .env
-```
-
-On Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-### 6. Run server
-
-```bash
+pip install -r requirements-dev.txt
 uvicorn app.main:app --reload --port 8002
+pytest -q
 ```
 
-### 7. Open Agent Service
+Copy `.env.example` to `.env`. Gemini and embeddings can be disabled for a fully deterministic run. Production values are documented in `.env.production.example`.
 
-Health check:
+## Docker
 
-```txt
-http://127.0.0.1:8002/api/v1/health
+```bash
+docker build -t career-copilot-agent-service .
+docker run --rm -p 8002:8002 career-copilot-agent-service
 ```
 
-API Agent:
-
-```txt
-http://127.0.0.1:8002/docs
-```
+In production this port must remain private. Requests and responses carry `X-Request-ID`; structured logs contain metadata/timing only, not raw CV/JD bodies.

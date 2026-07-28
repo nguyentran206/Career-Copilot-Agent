@@ -14,7 +14,7 @@ The MVP should help candidates answer three questions:
 
 ## Product Idea
 
-The system receives a candidate's CV PDF and Job Description text. It extracts CV text, parses the CV and JD into structured information, matches skills using AI/embedding, calculates a fit score, and returns recommendations based on the candidate's fit level.
+The system receives a candidate's CV PDF and either Job Description text or a JD PDF. It extracts document text, parses the CV and JD into structured information, matches skills using AI/embedding, calculates a fit score, and returns recommendations based on the candidate's fit level.
 
 The system should support conditional outcomes:
 
@@ -27,7 +27,7 @@ The system should support conditional outcomes:
 ## Input
 
 * CV file in PDF format
-* Job Description text
+* Job Description text or a text-based PDF
 
 ---
 
@@ -69,7 +69,7 @@ The system returns different recommendations based on the candidate's fit level:
 * **Agent Service:** Internal backend service running the LangGraph agent pipeline.
 * **Core Logic:**
   * CV PDF text extraction
-  * JD text input
+  * JD text input or JD PDF text extraction
   * CV & JD parsing
   * Embedding-based skill matching
   * Fit score calculation
@@ -89,7 +89,6 @@ The system returns different recommendations based on the candidate's fit level:
   * User dashboard
   * Multi-user history
 * **Advanced Document Handling:**
-  * JD PDF upload (MVP only supports JD text)
   * OCR for scanned PDFs
   * Beautiful PDF report generation
 * **System & Infrastructure:**
@@ -97,13 +96,12 @@ The system returns different recommendations based on the candidate's fit level:
   * Advanced job queue system (Session/job persistence design is simplified for MVP)
   * Advanced session management
   * Production-grade deployment
-  * CI/CD pipeline
 
 ---
 
 ## Technical & Implementation Notes
 
-* Document Parser Service is designed generically and may support JD PDF parsing in a future phase.
+* Document Parser Service extracts both CV and JD PDFs. The public request accepts exactly one JD source: text or PDF.
 * Since OCR is not included, scanned PDFs may return empty or short text along with a `NO_TEXT_EXTRACTED_OR_SCANNED_PDF` warning.
 * API Gateway acts as the public entry point, while Document Parser and Agent Service operate strictly as internal backend services.
 * The initial MVP uses in-memory session status tracking.
@@ -116,10 +114,10 @@ The system returns different recommendations based on the candidate's fit level:
 The MVP is considered successful when the following vertical slice (End-to-End Flow) works without requiring authentication, payment, or advanced history:
 
 ```text
-User uploads CV PDF and enters JD text
+User uploads CV PDF and either enters JD text or uploads a JD PDF
 → Frontend sends request to API Gateway
-→ API Gateway sends CV PDF to Document Parser Service
-→ Document Parser Service returns extracted CV text
+→ API Gateway sends CV PDF and optional JD PDF to Document Parser Service
+→ Document Parser Service returns extracted document text
 → Agent Service analyzes CV text against JD text
 → System returns fit score, matched skills, missing skills, suggestions, and conditional output
 → Frontend displays the result
@@ -129,6 +127,6 @@ User uploads CV PDF and enters JD text
 
 ## Implementation Status
 
-MVP is currently in development.
+MVP is complete in source and awaiting deployment validation.
 
 For current implementation progress, see [Implementation Status](IMPLEMENTATION_STATUS.md).

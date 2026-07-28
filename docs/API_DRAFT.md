@@ -1,70 +1,19 @@
-# API Draft
+# API Overview
 
-## Purpose
+All responses pass through the Gateway except internal health/service traffic. Gateway responses include `X-Request-ID`; analysis/session responses use `Cache-Control: no-store`.
 
-This document is the high-level API overview and endpoint registry for the Career Copilot Agent MVP.
+| Exposure | Service | Method | Endpoint | Purpose |
+|---|---|---|---|---|
+| Public | Gateway | GET | `/api/v1/health` | Liveness |
+| Public | Gateway | POST | `/api/v1/analyze` | Start temporary analysis; returns `202` + session ID |
+| Public | Gateway | GET | `/api/v1/session/{session_id}` | Poll `processing`, `completed`, or `failed`, plus `expires_at` |
+| Private | Parser | GET | `/api/v1/health` | Container health |
+| Private | Parser | POST | `/api/v1/parse-document` | Extract a PDF |
+| Private | Agent | GET | `/api/v1/health` | Container health |
+| Private | Agent | POST | `/api/v1/analyze` | Analyze extracted CV text against JD |
 
-It intentionally does not duplicate detailed request/response contracts. Detailed endpoint contracts, error responses, environment variables, and local run instructions are documented in each service README.
+`POST /api/v1/analyze` is multipart form data with required `cv_file` and exactly one of `jd_text` or `jd_file`. Both uploaded files must be text-based PDFs within their configured size limits. If `jd_file` is supplied, Gateway parses it before calling Agent. A completed payload includes `cv_parse_result` and optional `jd_parse_result`; extracted raw text is not returned publicly.
 
-## Source of Truth Policy
+Important public errors include `SESSION_NOT_FOUND` (also covers expired sessions), `SESSION_CAPACITY_REACHED` (`503`), `ANALYZE_RATE_LIMITED` (`429`), and `ANALYSIS_CAPACITY_REACHED` (`429`). Capacity/rate responses include `Retry-After`.
 
-| Information Type | Source of Truth |
-|---|---|
-| Current implementation progress | [Implementation Status](IMPLEMENTATION_STATUS.md) |
-| System architecture and current/target flow | [Architecture Draft](ARCHITECTURE_DRAFT.md) |
-| Endpoint registry and ownership | This document |
-| Detailed endpoint contracts | Service README files |
-
-## Current Runtime Topology
-
-```text
-Frontend
-  → API Gateway
-      → Document Parser Service
-      → Agent Service
-```
-
-Current notes:
-
-* The Next.js frontend calls only API Gateway.
-* API Gateway currently starts an in-memory analysis session from `POST /api/v1/analyze`.
-* The analysis workflow calls Document Parser Service to extract CV text.
-* The analysis workflow then calls Agent Service to analyze extracted CV text against JD text.
-* Agent Service also exposes its own deterministic analysis endpoint for direct local testing.
-
-## Target MVP Topology
-
-```text
-Frontend
-  → API Gateway
-      → Document Parser Service
-      → Agent Service
-          → LangGraph workflow
-          → Gemini
-          → Embedding model
-
-Future:
-Agent Service/API Gateway
-  → Supabase
-```
-
----
-
-## API Registry
-
-| Service | Exposure | Method | Endpoint | Status | Detailed docs |
-|---|---|---|---|---|---|
-| API Gateway | Public | GET | `/api/v1/health` | Implemented | [API Gateway README](../backend/api-gateway/README.md) |
-| API Gateway | Public | POST | `/api/v1/analyze` | Implemented session start response | [API Gateway README](../backend/api-gateway/README.md) |
-| API Gateway | Public | GET | `/api/v1/session/{session_id}` | Implemented in-memory session polling | [API Gateway README](../backend/api-gateway/README.md) |
-| Document Parser Service | Internal | GET | `/api/v1/health` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
-| Document Parser Service | Internal | POST | `/api/v1/parse-document` | Implemented | [Document Parser Service README](../backend/document-parser-service/README.md) |
-| Agent Service | Internal/direct local | GET | `/api/v1/health` | Implemented | [Agent Service README](../backend/agent-service/README.md) |
-| Agent Service | Internal/direct local | POST | `/api/v1/analyze` | Implemented deterministic baseline | [Agent Service README](../backend/agent-service/README.md) |
-
-## Status Notes
-
-* `POST /api/v1/analyze` in API Gateway currently returns `session_id` with status `processing`.
-* `GET /api/v1/session/{session_id}` returns `processing`, `completed`, or `failed`.
-* Session storage is currently in-memory and is lost when API Gateway restarts.
-* Agent Service currently uses a deterministic rule-based analysis baseline and can still be tested directly.
+The Agent response contract is `phase6-v2`. Its component fields are `skill_coverage_score`, `experience_relevance_score`, `project_relevance_score`, and `education_cert_relevance_score`. Detailed schemas remain in the Pydantic and TypeScript source models.

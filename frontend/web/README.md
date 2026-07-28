@@ -1,70 +1,20 @@
 # Career Copilot Web
 
-Next.js TypeScript App Router frontend for the Career Copilot Agent MVP.
+Next.js App Router frontend intended for Vercel. It calls only the public API Gateway, starts an analysis, and polls the temporary session for up to 240 seconds.
 
-## Role
+The UI accepts a CV PDF and lets the user choose either pasted JD text or a JD PDF. It explains the 30-minute in-memory privacy model, keeps session/language/scoring metadata out of the user-facing interface, maps expiry/rate/capacity errors to friendly text, and provides retry/clear controls. Results include a fit-score disclaimer.
 
-This app is the public UI layer. It lets a user upload a CV PDF, paste a Job Description, start an analysis session, poll the session status, and render the completed analysis result.
+## Local
 
-The frontend calls only API Gateway. It does not call Document Parser Service or Agent Service directly.
-
-For backend endpoint ownership and detailed contracts, see:
-
-* [API Draft](../../docs/API_DRAFT.md)
-* [API Gateway README](../../backend/api-gateway/README.md)
-
-## Environment
-
-Create a local env file:
-
-```text
-cp .env.example .env.local
-```
-
-Default value:
-
-```text
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
-```
-
-## Local Development
-
-Install dependencies:
-
-```text
-npm install
-```
-
-Run the frontend:
-
-```text
+```bash
+npm ci
 npm run dev
+npm run lint
+npm run typecheck
+npm run build
+npm audit --audit-level=high
 ```
 
-Open:
+Copy `.env.example` to `.env.local`. For Vercel, set `NEXT_PUBLIC_API_BASE_URL` to the public HTTPS Gateway origin; `.env.production.example` is the template.
 
-```text
-http://localhost:3000
-```
-
-Backend services should be running separately:
-
-```text
-API Gateway:              http://127.0.0.1:8000
-Document Parser Service:  http://127.0.0.1:8001
-Agent Service:            http://127.0.0.1:8002
-```
-
-## Implemented Flow
-
-```text
-User uploads CV PDF + enters JD text
-→ Frontend POSTs multipart/form-data to API Gateway /api/v1/analyze
-→ API Gateway returns session_id with processing status
-→ Frontend polls API Gateway /api/v1/session/{session_id}
-→ Frontend renders completed result or a friendly error
-```
-
-## Notes
-
-This is an MVP UI. It intentionally does not include auth, dashboard history, persistence, or direct service-to-service controls.
+No CV/JD is stored by Next.js or in browser storage. The browser sends the upload directly to Gateway and keeps only component state for the open page.
