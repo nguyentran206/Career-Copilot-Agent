@@ -1,12 +1,13 @@
 # Career Copilot Agent
 
-Career Copilot analyzes a CV PDF against a Job Description, explains the fit score, identifies matched and missing skills, and returns either a cover-letter draft or a learning roadmap.
+Career Copilot analyzes a CV PDF against either pasted Job Description text or a text-based JD PDF, explains the fit score, identifies matched and missing skills, and returns either a cover-letter draft or a learning roadmap.
 
 ## Current release candidate
 
 The product flow is complete through Phase 6 and is prepared for deployment validation:
 
 - Next.js frontend intended for Vercel.
+- CV PDF upload with exactly one JD source: pasted text or a text-based PDF.
 - Three long-running FastAPI Docker services: public API Gateway plus private Document Parser and Agent services.
 - LangGraph JD-first analysis, optional Gemini structured parsing/generation and embeddings, with deterministic fallbacks.
 - Versioned `phase6-v2` scoring. No external occupation taxonomy is used.

@@ -4,10 +4,10 @@ Microservice responsible for extracting raw text from uploaded PDF documents.
 
 ## Responsibilities
 
-* Receive uploaded PDF documents
+* Receive uploaded CV and JD PDF documents
 * Validate uploaded file type and size
 * Extract raw text from PDF files
-* Return extracted text and document metadata to API Gateway
+* Return extracted text, document type, and document metadata to API Gateway
 
 ## Current Endpoints
 
@@ -42,8 +42,10 @@ Content type: `multipart/form-data`
 Current MVP usage:
 
 * Parse CV PDF into raw text.
-* JD is currently expected as plain text in the main analysis flow.
-* JD PDF parsing may be supported in a future phase.
+* Parse JD PDF into raw text when the public analysis request uses `jd_file`.
+* Preserve the Gateway-provided `document_type` (`cv` or `jd`) in the response.
+
+The public analysis flow accepts a CV PDF and exactly one JD source: pasted text or a JD PDF. Pasted JD text does not pass through this service. When a JD PDF is supplied, API Gateway calls this endpoint with `document_type=jd`, validates the extracted text, and sends that text to Agent Service.
 
 ### Successful Response
 
@@ -62,7 +64,7 @@ Current MVP usage:
 
 ### Response With Warning
 
-If the PDF appears to be scanned or contains too little extractable text, the service returns a successful response with a warning.
+If a CV or JD PDF appears to be scanned or contains too little extractable text, the service returns a successful response with a warning.
 
 ```json
 {
@@ -182,6 +184,6 @@ http://127.0.0.1:8001/docs
 
 * Only PDF files are supported.
 * OCR is not implemented yet.
-* Scanned PDFs may return empty or very short text with a warning.
+* CV and JD PDFs must contain an extractable text layer; scanned PDFs may return empty or very short text with a warning.
 * The service only extracts raw text and metadata.
 * Structured CV/JD parsing, AI analysis, fit scoring, cover letter generation, and roadmap generation are outside this service and will be handled by the Agent Service.

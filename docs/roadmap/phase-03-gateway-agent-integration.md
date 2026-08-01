@@ -1,5 +1,7 @@
 # Phase 03 - API Gateway to Agent Service Integration
 
+> Tài liệu này ghi lại phạm vi lịch sử của Phase 03. Contract hiện tại đã mở rộng ở Phase 06: public API nhận CV PDF và chính xác một nguồn JD (`jd_text` hoặc `jd_file`); nếu dùng `jd_file`, Gateway gửi cả JD PDF qua Document Parser trước khi gọi Agent Service.
+
 ## Mục tiêu
 
 Tạo backend end-to-end flow đầu tiên:

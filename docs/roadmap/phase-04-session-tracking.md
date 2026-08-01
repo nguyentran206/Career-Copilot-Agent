@@ -123,7 +123,7 @@ Cần test:
 Phase này triển khai session tracking ở API Gateway:
 
 - `POST /api/v1/analyze` tạo in-memory session và trả `session_id` với `status = processing`.
-- Background task chạy workflow Document Parser Service → Agent Service.
+- Background task chạy workflow Document Parser Service → Agent Service; ở contract hiện tại, Parser xử lý CV PDF và cả JD PDF nếu request dùng `jd_file`.
 - `GET /api/v1/session/{session_id}` trả `processing`, `completed`, hoặc `failed`.
 - Session store hiện là in-memory và mất dữ liệu khi API Gateway restart.
 - Supabase persistence và production-grade queue chưa nằm trong phase này.
